@@ -778,7 +778,8 @@ itcl::class picoscope {
         }
 
         # if amplitude is too small, try to decrease the range and repeat
-        set max [expr max([join $ret ,])]
+        if {[llength $ret] > 1} { set max [expr max([join $ret ,])]}\
+        else {set max $ret}
         if {$auto == 1 && $justinc==0 && $max < [expr 0.5*$range]} {
           if {![catch {dec_range}]} continue
         }
