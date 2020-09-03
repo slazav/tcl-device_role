@@ -143,7 +143,9 @@ itcl::class keysight {
     }
     set dev $d
     set valnames $ch
+    dev_err_clear $dev
     $dev cmd "meas:$func?"
+    dev_err_check $dev
   }
 
   ############################
@@ -175,9 +177,9 @@ itcl::class keysight {
 
   method set_conf {name val} {
     switch -exact -- $name {
-      auto_range { return [$dev cmd "$func:RANGE:AUTO $val"]}
-      range      { return [$dev cmd "$func:RANGE $val"]}
-      npl_cycles { return [$dev cmd "$func:NPLC $val"]}
+      auto_range { dev_set_par $dev "$func:RANGE:AUTO" $val}
+      range      { dev_set_par $dev "$func:RANGE" $val}
+      npl_cycles { dev_set_par $dev "$func:NPLC" $val}
       default {error "unknown configuration name: $name"}
     }
   }
