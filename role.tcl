@@ -3,7 +3,7 @@
 #
 #   set dev [DeviceRole <name>:<channel> <role>]
 #
-#  <name>    - Device name in Device librarym,
+#  <name>    - Device name in Device library,
 #              should me configured in /etc/devices.txt
 #  <channel> - A parameter for the driver. Can be a physical channel
 #              for multi-channel devices, operation mode, or something
@@ -17,7 +17,7 @@
 #   $dev set_curr 0.1
 #
 # This means "use channel 1L of Device ps0 as a power_supply".
-# power_supply commands can be founs in ./power_supply.tcl file.
+# power_supply commands can be found in ./power_supply.tcl file.
 # Channel can be set for some devices, see power_supply/*.tcl
 
 package require Itcl
