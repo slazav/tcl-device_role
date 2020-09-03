@@ -292,7 +292,9 @@ itcl::class keysight_mplex {
   method get {} {
     set ret {}
     foreach c $cmds {
+      dev_err_clear $dev
       set ret [concat $ret [split [$dev cmd $c] {,}]]
+      dev_err_check $dev
     }
     return $ret
   }
