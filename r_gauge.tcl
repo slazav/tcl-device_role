@@ -26,7 +26,7 @@ itcl::class interface {
   # For lockin it can be X or Y,
   # For multi-channel ADC it could be CH1, CH2, etc.
   method get_val_name {n} {
-    if {$n<0 || $n>[llength valnames]} {
+    if {$n<0 || $n>=[llength valnames]} {
       error "get_val_name: value number $n is out of range 0..[llength valnames]"}
     return [lindex $valnames $n]
   }
@@ -138,7 +138,7 @@ itcl::class keysight {
       }
     }
     set dev $d
-    set valnames $chan
+    set valnames $ch
     $dev cmd $cmd
   }
 
