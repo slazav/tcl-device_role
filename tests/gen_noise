@@ -1,0 +1,10 @@
+#!/usr/bin/tclsh
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+set dev [DeviceRole gen1 noise_source]
+
+$dev set_noise 12000 0.4
+puts [$dev get_volt]
+puts [$dev get_bw]
+puts [$dev get_offs]

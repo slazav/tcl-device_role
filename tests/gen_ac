@@ -1,0 +1,10 @@
+#!/usr/bin/tclsh
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+set dev [DeviceRole gen1 ac_source]
+
+$dev set_ac 12000 0.4
+puts [$dev get_volt]
+puts [$dev get_freq]
+puts [$dev get_phase]
