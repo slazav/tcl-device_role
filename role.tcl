@@ -143,4 +143,19 @@ itcl::class device_role::base_interface {
   method lock {} {$dev lock}
   method unlock {} {$dev unlock}
   method get_device {} {return $dev}
+
+  # Get list of configuation options.
+  # Each entry contains a list of following
+  # values:
+  #   {name} {type} {values}
+  # types: list, string
+  # values: list of all values for list option,
+  #   empty list for string option.
+  method get_conf_list {} {return {}}
+
+  # get configuration option
+  method get_conf {name} {}
+
+  # set configuration option
+  method set_conf {name val} {}
 }
