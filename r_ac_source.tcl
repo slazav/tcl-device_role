@@ -100,18 +100,18 @@ itcl::class keysight {
   constructor {d ch id} {keysight_gen::constructor $d $ch $id} {
     set max_v 20
     set min_v 0.002
-    set_par "${sour_pref}BURST:STATE" "0"
-    set_par "${sour_pref}VOLT:UNIT" "VPP"
-    set_par "UNIT:ANGL"             "DEG"
-    set_par "${sour_pref}FUNC"      "SIN"
-    set_par "OUTP${chan}:LOAD"      "INF"
+    dev_set_par $dev "${sour_pref}BURST:STATE" "0"
+    dev_set_par $dev "${sour_pref}VOLT:UNIT" "VPP"
+    dev_set_par $dev "UNIT:ANGL"             "DEG"
+    dev_set_par $dev "${sour_pref}FUNC"      "SIN"
+    dev_set_par $dev "OUTP${chan}:LOAD"      "INF"
   }
 
   method set_ac {freq volt {offs 0}} {
-    err_clear
+    dev_err_clear $dev
     $dev cmd "${sour_pref}APPLY:SIN $freq,$volt,$offs"
-    err_check
-    set_par "OUTP${chan}" "1"
+    dev_err_check $dev
+    dev_set_par $dev "OUTP${chan}" "1"
   }
   method off {} {
 #  # For Keysight generators it maybe useful to set VOLT to $min_v
@@ -119,12 +119,12 @@ itcl::class keysight {
 #  # But this can work in some unexpected way if 
 #  # voltage will be read and changed in the "off" state.
 #    set old_v [get_volt]
-#    set_par "${sour_pref}VOLT" $min_v
-    set_par "OUTP${chan}" 0
+#    dev_set_par $dev "${sour_pref}VOLT" $min_v
+    dev_set_par $dev "OUTP${chan}" 0
   }
   method on {} {
-#    set_par "${sour_pref}VOLT" $old_v
-    set_par "OUTP${chan}" 1
+#    dev_set_par $dev "${sour_pref}VOLT" $old_v
+    dev_set_par $dev "OUTP${chan}" 1
   }
   method get_volt {}  {
     if {[$dev cmd "OUTP${chan}?"] == 0} {return 0}
@@ -136,23 +136,23 @@ itcl::class keysight {
 
   method set_volt {v}  {
     if {$v==0} { off; return}
-    set_par "${sour_pref}VOLT" $v
-    set_par "OUTP${chan}" 1
+    dev_set_par $dev "${sour_pref}VOLT" $v
+    dev_set_par $dev "OUTP${chan}" 1
   }
-  method set_freq {v}  { set_par "${sour_pref}FREQ" $v }
-  method set_offs {v}  { set_par "${sour_pref}VOLT:OFFS" $v }
+  method set_freq {v}  { dev_set_par $dev "${sour_pref}FREQ" $v }
+  method set_offs {v}  { dev_set_par $dev "${sour_pref}VOLT:OFFS" $v }
 
   method set_phase {v} {
     set v [expr $v-int($v/360.0)*360]
-    set_par "${sour_pref}PHAS" $v
+    dev_set_par $dev "${sour_pref}PHAS" $v
   }
 
   method set_sync {state} {
     if {$chan != {}} {
-      set_par "OUTP:SYNC:SOUR" "CH${chan}"
+      dev_set_par $dev "OUTP:SYNC:SOUR" "CH${chan}"
     }
-    if {$state} { set_par "OUTP:SYNC" 1 }\
-    else        { set_par "OUTP:SYNC" 0 }
+    if {$state} { dev_set_par $dev "OUTP:SYNC" 1 }\
+    else        { dev_set_par $dev "OUTP:SYNC" 0 }
   }
 }
 

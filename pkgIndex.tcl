@@ -7,6 +7,7 @@ set _version 1.2
 set _files {}
 lappend _files "$dir/role.tcl"
 lappend _files "$dir/d_keysight_gen.tcl"
+lappend _files "$dir/d_keysight_err.tcl"
 lappend _files "$dir/d_tenma_ps.tcl"
 lappend _files "$dir/r_noise_source.tcl"
 lappend _files "$dir/r_ac_source.tcl"

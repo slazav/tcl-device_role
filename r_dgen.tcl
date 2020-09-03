@@ -115,7 +115,7 @@ itcl::class keysight {
     set dev_ac1 [DeviceRole $dev:1 ac_source]
     set dev_ac2 [DeviceRole $dev:2 ac_source]
     # this is the only non-trivial setting:
-    set_par "FREQ:COUP" "1"
+    dev_set_par $dev "FREQ:COUP" "1"
   }
 
   # Frequencies are coupled, only one should be set:

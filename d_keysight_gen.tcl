@@ -58,42 +58,4 @@ itcl::class keysight_gen {
     if {[regexp {,33522A,} $id]} {return {33522A}}
   }
 
-  # set generator parameter if it is not set
-  method set_par {cmd val} {
-    #set verb 1
-    set old [$dev cmd "$cmd?"]
-    #if {$verb} {puts "get $cmd: $old"}
-
-    # on some generators LOAD? command shows a
-    # large number 9.9E37 instead of INF
-    if {$val == "INF" && $old > 1e30} {set old "INF"}
-
-    if {$old != $val} {
-      #if {$verb} {puts "set $cmd: $val"}
-      err_clear
-      $dev cmd "$cmd $val"
-      err_check "can't set $cmd $val:"
-    }
-  }
-
-  # clear generator error
-  method err_clear {} {
-    while {1} {
-      set stb [$dev cmd *STB?]
-      if {($stb&4) == 0} {break}
-      $dev cmd SYST:ERR?
-    }
-  }
-
-  # throw generator error if any:
-  method err_check {{msg {}}} {
-    set stb [$dev cmd *STB?]
-    if {($stb&4) != 0} {
-      set err [$dev cmd SYST:ERR?]
-      error "Generator error: $msg $err"
-    }
-  }
-
-
-
 }
