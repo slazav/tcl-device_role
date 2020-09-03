@@ -116,6 +116,10 @@ itcl::class TEST {
 
 itcl::class keysight {
   inherit interface
+
+  # measurement function (volt:dc etc.), set in the constructor
+  variable func
+
   proc test_id {id} {
     if {[regexp {,34461A,} $id]} {return {34461A}}
     if {[regexp {,34401A,} $id]} {return {34401A}}
@@ -126,12 +130,12 @@ itcl::class keysight {
 
   constructor {d ch id} {
     switch -exact -- $ch {
-      DCV {  set cmd meas:volt:dc? }
-      ACV {  set cmd meas:volt:ac? }
-      DCI {  set cmd meas:curr:dc? }
-      ACI {  set cmd meas:curr:ac? }
-      R2  {  set cmd meas:res?     }
-      R4  {  set cmd meas:fres?    }
+      DCV {  set func volt:dc }
+      ACV {  set func volt:ac }
+      DCI {  set func curr:dc }
+      ACI {  set func curr:ac }
+      R2  {  set func res     }
+      R4  {  set func fres    }
       default {
         error "$this: bad channel setting: $ch"
         return
@@ -139,7 +143,7 @@ itcl::class keysight {
     }
     set dev $d
     set valnames $ch
-    $dev cmd $cmd
+    $dev cmd "meas:$func?"
   }
 
   ############################
@@ -150,22 +154,32 @@ itcl::class keysight {
     return [get]
   }
 
-  ############################
-  method list_ranges {} {
-  }
-  method list_tconsts {} {
-  }
 
   ############################
-  method set_range  {val} {
-  }
-  method set_tconst {val} {
+  method get_conf_list {} {
+    return [list {
+      {auto_range} {bool}
+      {range}      {string} {}
+      {npl_cycles} {list}   {0.02 0.2 1 10 100 MIN MAX}
+    }]
   }
 
-  ############################
-  method get_range  {} {
+  method get_conf {name} {
+    switch -exact -- $name {
+      auto_range { return [$dev cmd "$func:RANGE:AUTO?"]}
+      range      { return [expr {[$dev cmd "$func:RANGE?"]}]}
+      npl_cycles { return [expr {[$dev cmd "$func:NPLC?"]}]}
+      default {error "unknown configuration name: $name"}
+    }
   }
-  method get_tconst {} {
+
+  method set_conf {name val} {
+    switch -exact -- $name {
+      auto_range { return [$dev cmd "$func:RANGE:AUTO $val"]}
+      range      { return [$dev cmd "$func:RANGE $val"]}
+      npl_cycles { return [$dev cmd "$func:NPLC $val"]}
+      default {error "unknown configuration name: $name"}
+    }
   }
 
 }
@@ -207,17 +221,6 @@ itcl::class keithley_nanov {
     return [get]
   }
 
-  ############################
-  method list_ranges {} {
-  }
-
-  ############################
-  method set_range  {val} {
-  }
-
-  ############################
-  method get_range  {} {
-  }
 
 }
 
@@ -295,23 +298,6 @@ itcl::class keysight_mplex {
     return [get]
   }
 
-  ############################
-  method list_ranges {} {
-  }
-  method list_tconsts {} {
-  }
-
-  ############################
-  method set_range  {val} {
-  }
-  method set_tconst {val} {
-  }
-
-  ############################
-  method get_range  {} {
-  }
-  method get_tconst {} {
-  }
 
 }
 
