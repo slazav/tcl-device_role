@@ -148,14 +148,14 @@ itcl::class device_role::base_interface {
   # Each entry contains a list of following
   # values:
   #   {name} {type} {values}
-  # types: list, string
+  # types: list, string, bool
   # values: list of all values for list option,
   #   empty list for string option.
   method get_conf_list {} {return {}}
 
   # get configuration option
-  method get_conf {name} {}
+  method get_conf {name} { error "unknown configuration option: $name" }
 
   # set configuration option
-  method set_conf {name val} {}
+  method set_conf {name val} { error "unknown configuration option: $name" }
 }

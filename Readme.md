@@ -63,7 +63,7 @@ available for this device. Each entry contains a list of following
 values: `{name} {type} {values}`
 
 * `name` is a name of the option
-* `type` is type of the option: `list`, `string`
+* `type` is type of the option: `list`, `string`, `bool`
 * `values` is list of all values for list option,
 empty list for string option.
 
