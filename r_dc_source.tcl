@@ -2,7 +2,7 @@
 # dc_source role
 
 package require Itcl
-package require Device
+package require Device2
 
 namespace eval device_role::dc_source {
 

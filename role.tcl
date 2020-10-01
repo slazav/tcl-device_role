@@ -21,7 +21,7 @@
 # Channel can be set for some devices, see power_supply/*.tcl
 
 package require Itcl
-package require Device
+package require Device2
 
 namespace eval device_role {}
 

@@ -2,7 +2,7 @@
 # 2-channel generator used for excitation and compenasation
 
 package require Itcl
-package require Device
+package require Device2
 
 namespace eval device_role::dgen {
 

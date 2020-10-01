@@ -2,7 +2,7 @@
 # noise_source role
 
 package require Itcl
-package require Device
+package require Device2
 
 namespace eval device_role::noise_source {
 
