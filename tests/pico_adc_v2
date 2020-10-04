@@ -1,0 +1,14 @@
+#!/usr/bin/tclsh
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+# Measure three channels:
+#  differential 1+2 with range 2.5V
+#  single 3 with range 1.25V
+#  single 4 with range 2.5V
+set devname adc1:1d2500,3s1250,4s2500
+
+set dev [DeviceRole $devname gauge]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]

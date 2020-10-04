@@ -46,7 +46,7 @@ itcl::class interface {
   method get_range  {} {}; # get current range setting
   method get_tconst {} {}; # get current time constant setting
 
-  method get_status {} {return ""}; # get current time constant setting
+  method get_status {} {return ""}; # get current status
   method get_status_raw {} {return 0};
 }
 
@@ -828,11 +828,25 @@ itcl::class picoscope {
 # Use Picoscope ADC as a gauge.
 #
 # Channels:
-
-# * `<channels>(r<range>)` -- measure DC signal on any oscilloscope channels
+#
+# * Channel setting V1:
+#   `<channels>(r<range>)` -- measure DC signal on any oscilloscope channels
 #   (`01`, `02`, etc), return multiple values, one for each channel.
 #   Any number of channels with any order and repeats can be used. For example
 #   `110711(r1250)` returns three values: on 11, 07, and 11 channels.
+#   Conversion time is always 180 ms.
+#
+# * Channel setting V2:
+#   <chan1>(s|d)<range>,<chan2>(s|d)<range>,...
+#   Configure multiple channels for single/double-ended measurements,
+#   with separate ranges. Conversion time is always 180 ms.
+#
+# * Channel setting V3:
+#   <chan>(s|d)
+#   Measure only one channel, range and conversion time is controlled
+#   with get_/set_tconst and get_/set_range.
+#   This mode is sutable for using the device by multiple users.
+#   Other modes should be removed in the future...
 #
 
 itcl::class picoADC {
@@ -841,23 +855,36 @@ itcl::class picoADC {
     if {[regexp {pico_adc} $id]} {return 1}
   }
 
+  # Variables for multi-channel modes
   variable adc_ach {};    # list of channels: {01 12 05 12}
   variable adc_uch {};    # list of channels, unique and sorted: {01 05 12}
+  common tconv_multi  180
 
-  # lock-in ranges and time constants
-  common ranges {2500 1250 625 312.5 156.25 78.125 39.0625}; # mV
-  common tconvs {60 100 180 340 660};                        # ms
-  common tconv  180
+  # Variables for single-channel mode
+  common chan  {};   # channel
+  common sngl   1;   # single/differential
+  common range 2500; # range
+  common convt  180; # conversion time
 
   constructor {d ch id} {
 
     set dev $d
-    set adc_meas {}
 
-    array unset range;  # range array (for each channel)
-    array unset single; # single-ended mode, 1 or 0, array (for each channel)
+    # V3 Single-channel mode: device:1s
+    # Here only channel number and single/differential mode is set.
+    # range and time constant is selected
+    # This mode is sutable for using the device by multiple users:
+    if {[regexp {^([0-9]+)([sd])$} $ch v0 chan vsd]} {
+      set sngl [expr {"$vsd"=="s"? 1:0}]
+      if {!$sngl && $chan%2 != 1} {
+        error "can't set double-ended mode for even-numbered channel: $chan" }
+      return
+    }
 
-    # Original channel setting: "device:010203(r2500)".
+    array unset range_;  # range array (for each channel)
+    array unset single_; # single-ended mode, 1 or 0, array (for each channel)
+
+    # V1 channel setting: "device:010203(r2500)".
     # Any channel order, single rande for all channels,
     # only single-ended measurements.
     if {[regexp {^([0-9]+)\(r([0-9\.]+)\)?$} $ch v0 v1 v2]} {
@@ -868,14 +895,14 @@ itcl::class picoADC {
         set c "$c1$c2"
         lappend adc_ach $c
         lappend valnames $c
-        set range($c) $v2
-        set single($c) 1
+        set range_($c) $v2
+        set single_($c) 1
       }
 
-    } else {
-    # New channel setting: "device:1s2500,2d1000,12s1000"
+    # V2 channel setting: "device:1s2500,2d1000,12s1000"
     # Single/double-ended measurements, separate ranges.
     # Duplicated channels are not allowed.
+    } else {
       foreach c [split $ch {,}] {
         if {[regexp {^([0-9]+)([sd])([0-9\.]+)} $c v0 vch vsd vrng]} {
 
@@ -885,49 +912,63 @@ itcl::class picoADC {
 
           lappend adc_ach $vch
           lappend valnames $vch
-          set range($vch) $vrng
-          set single($vch) [expr {"$vsd"=="s"? 1:0}]
+          set range_($vch) $vrng
+          set single_($vch) [expr {"$vsd"=="s"? 1:0}]
 
-          if {!$single($vch) && $vch%2 != 1} {
-            error "can't set double-ended mode for even-numbered channel: $c" }
+          if {!$single_($vch) && $vch%2 != 1} {
+            error "can't set double-ended mode for even-numbered channel: $vch" }
         }\
         else {error "wrong channel setting: $c"}
       }
     }
 
-    # no channels set
-    if {[llength $adc_ach] == 0} {error "no channels"}
+    # V1 and V2 modes only
+    if {$chan == {}} {
+      # no channels set
+      if {[llength $adc_ach] == 0} {error "no channels"}
 
-    # list of sorted unique channels
-    set adc_uch [lsort -integer -unique $adc_ach]
+      # list of sorted unique channels
+      set adc_uch [lsort -integer -unique $adc_ach]
 
-    # set ADC channels
-    foreach c $adc_uch {
-      $dev cmd chan_set [format "%02d" $c] 1 $single($c) $range($c)
+      # set ADC channels
+      foreach c $adc_uch {
+        $dev cmd chan_set [format "%02d" $c] 1 $single_($c) $range_($c)
+      }
+      # set ADC time intervals.
+      set dt [expr [llength $adc_uch]*$convt+100]
+      $dev cmd set_t $dt $convt
     }
-    # set ADC time intervals.
-    set dt [expr [llength $adc_uch]*$tconv+100]
-    $dev cmd set_t $dt $tconv
   }
 
   ############################
   method get {{auto 0}} {
-    array unset ures
-    array unset ares
-    set uvals {*}[$dev cmd get]
-    foreach v $uvals ch $adc_uch {
-      set ures($ch) $v
+    # V1 and V2 modes:
+    if {$chan == {}} {
+      array unset ures
+      array unset ares
+      set uvals [$dev cmd get]
+      foreach v $uvals ch $adc_uch {
+        set ures($ch) $v
+      }
+      foreach ch $adc_ach {
+        lappend ares $ures($ch)
+      }
+      return $ares
+
+    # V3 mode:
+    } else {
+      return [$dev cmd get_val $chan $sngl $range $convt]
     }
-    foreach ch $adc_ach {
-      lappend ares $ures($ch)
-    }
-    return $ares
   }
   method get_auto {} { return [get 1] }
 
   ############################
-  method list_ranges {} { return $ranges }
-  method list_tconvs {} { return $tconvs }
+  method list_ranges  {} {return [$dev cmd ranges]}
+  method list_tconsts {} {return [$dev cmd tconvs]}
+  method set_range  {val} {set range $val}
+  method set_tconst {val} {set convt $val}
+  method get_range  {} {return $range}
+  method get_tconst {} {return $convt}
 
 }
 
