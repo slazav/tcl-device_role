@@ -148,9 +148,9 @@ itcl::class device_role::base_interface {
   # Each entry contains a list of following
   # values:
   #   {name} {type} {values}
-  # types: list, string, bool
+  # types: list, string, bool, const
   # values: list of all values for list option,
-  #   empty list for string option.
+  #   empty list for other options.
   method get_conf_list {} {return {}}
 
   # get configuration option
