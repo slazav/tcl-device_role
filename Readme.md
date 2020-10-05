@@ -281,4 +281,7 @@ for single-ended measurement, `d` for double-ended measurement, range is
 * Agilent VS leak detector. Returns three values: leak rate,
 output pressure (mbar), input pressure (mbar)
 
+* Pfeiffer Adixen ASM340 leak detector. Returns two values:
+leak rate (mbar*l/s), input pressure (mbar).
+
 * TEST. Channels R<N>... for N random numbers, T<N> for N increasing values

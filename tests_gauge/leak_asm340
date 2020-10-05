@@ -1,0 +1,10 @@
+#!/usr/bin/tclsh
+
+set devname leak_asm340
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+set dev [DeviceRole $devname gauge]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]

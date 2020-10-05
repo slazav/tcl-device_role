@@ -145,17 +145,20 @@ itcl::class device_role::base_interface {
   method get_device {} {return $dev}
 
   # Get list of configuation options.
-  # Each entry contains a list of following
-  # values:
-  #   {name} {type} {values}
-  # types: list, string, bool
-  # values: list of all values for list option,
-  #   empty list for string option.
-  method get_conf_list {} {return {}}
+  # Each entry contains a list of two values: {name} {type}
+  # types: <list>, string, bool, const
+  #
+  # Example:
+  # {{range  {1 2 5 10 20 50}}
+  #  {tconst {10ms 100ms 1s 10s}}
+  #  {autorange bool}
+  #  {status const}
+  # }
+  method conf_list {} {return {}}
 
-  # get configuration option
-  method get_conf {name} { error "unknown configuration option: $name" }
+  # Get configuration option
+  method conf_get {name} { error "unknown configuration option: $name" }
 
-  # set configuration option
-  method set_conf {name val} { error "unknown configuration option: $name" }
+  # Set configuration option
+  method conf_set {name val} { error "unknown configuration option: $name" }
 }

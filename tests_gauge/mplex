@@ -1,0 +1,14 @@
+#!/usr/bin/tclsh
+
+# Keysight 34972A multiplexer
+
+source inc.tcl
+
+set dev [DeviceRole "mplex1:DCV(101,103:104) ACV(102)" gauge]
+
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+
+

@@ -1,0 +1,15 @@
+#!/usr/bin/tclsh
+
+# Picoscope 4224, 4262
+source inc.tcl
+
+set dev [DeviceRole osc2:lockin(AB) gauge2]
+
+puts [$dev get]
+
+puts "get_status: [$dev conf_get status]"
+puts "get_range:  [$dev conf_get range]"
+puts "get_tconst: [$dev conf_get tconst]"
+
+puts "conf:  [$dev conf_list]"
+

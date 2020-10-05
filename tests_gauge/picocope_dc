@@ -1,0 +1,15 @@
+#!/usr/bin/tclsh
+
+# Picoscope 4224, 4262
+source inc.tcl
+
+set dev [DeviceRole osc1:DC(AB) gauge]
+
+puts [$dev get]
+
+
+puts "get_ranges:  [$dev list_ranges]"
+puts "get_tconsts: [$dev list_tconsts]"
+puts "get_status:  [$dev get_status]"
+puts "get_range:   [$dev get_range]"
+puts "get_tconst:  [$dev get_tconst]"

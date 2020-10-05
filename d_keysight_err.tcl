@@ -19,6 +19,15 @@ proc dev_err_check {dev {msg {}}} {
   }
 }
 
+# execute a command and check error status
+proc dev_check {dev cmd} {
+  dev_err_clear $dev
+  set ret [$dev cmd $cmd]
+  dev_err_check $dev "can't do $cmd:"
+  return $ret
+}
+
+
 proc dev_set_par {dev cmd val} {
   #set verb 1
   set old [$dev cmd "$cmd?"]
@@ -30,8 +39,6 @@ proc dev_set_par {dev cmd val} {
 
   if {$old != $val} {
     #if {$verb} {puts "set $cmd: $val"}
-    dev_err_clear $dev
-    $dev cmd "$cmd $val"
-    dev_err_check $dev "can't set $cmd $val:"
+    dev_check $dev "$cmd $val"
   }
 }

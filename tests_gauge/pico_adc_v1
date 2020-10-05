@@ -1,0 +1,13 @@
+#!/usr/bin/tclsh
+
+# Measure three channels: 1,2 and 3 in single mode with range 2.5V
+# Return four values: ch1, ch2, ch3, ch1
+
+set devname adc1:01020301(r2500)
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+set dev [DeviceRole $devname gauge]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
