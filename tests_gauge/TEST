@@ -1,0 +1,16 @@
+#!/usr/bin/tclsh
+
+source inc.tcl
+
+set dev1 [DeviceRole TEST     gauge]
+set dev2 [DeviceRole TEST:T2  gauge]
+
+puts [$dev1 get]
+puts [$dev2 get]
+
+puts [$dev1 get_auto]
+puts [$dev2 get_auto]
+
+puts "get_ranges:  [$dev1 list_ranges]"
+puts "get_tconsts: [$dev1 list_tconsts]"
+puts "get_status:  [$dev1 get_status]"

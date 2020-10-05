@@ -113,6 +113,11 @@ itcl::class TEST {
 #   KEITHLEY INSTRUMENTS INC.,MODEL 2000,1234147,A20 /A02
 #
 # Use channels ACI, DCI, ACV, DCV, R2, R4
+#
+# Tested:
+#   2020/10/05, Keythley-2020,   V.Z.
+#   2020/10/05, Keysight-34410A, V.Z.
+#
 
 itcl::class keysight {
   inherit interface
@@ -239,6 +244,10 @@ itcl::class keithley_nanov {
 # Valid prefixes are: DCI, ACV, DCV, R2, R4
 # For R4 measurement channels are pairs with n+10 (34901A extension or
 # n+8 (34902A extension)
+#
+# Tested:
+#   2020/10/05, Keysight-34972A,   V.Z.
+#
 
 itcl::class keysight_mplex {
   inherit interface
@@ -426,6 +435,10 @@ itcl::class sr844 {
 #
 # Use channels 1 or 2 to measure voltage from auxilary inputs,
 # channels XY RT FXY FRT to measure lockin X Y R Theta values
+#
+# Tested:
+#   2020/10/05, SR830,   V.Z.
+#
 
 itcl::class sr830 {
   inherit interface
@@ -561,6 +574,9 @@ itcl::class sr830 {
 # * If `(<channels>)` is skipped then `(AB)` is used. If `:FXY` or `:XY`
 #   suffix is skipped then `:FXY` is used. Thus using just `lockin` is same as
 #   `lockin(AB):FXY`.
+#
+# Tested:
+#   2020/10/05, Pico 4224, 4262,   V.Z.
 
 itcl::class picoscope {
   inherit interface
@@ -848,6 +864,9 @@ itcl::class picoscope {
 #   with get_/set_tconst and get_/set_range.
 #   This mode is sutable for using the device by multiple users.
 #   Other modes should be removed in the future...
+#
+# Tested:
+#   2020/10/05, PicoADC24,   V.Z.
 #
 
 itcl::class picoADC {

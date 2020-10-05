@@ -1,0 +1,32 @@
+#!/usr/bin/tclsh
+
+# lock-in SR830
+
+source inc.tcl
+
+# AUX IN
+set dev1 [DeviceRole lockin1:1 gauge]
+set dev2 [DeviceRole lockin1:2 gauge]
+
+puts [$dev1 get]
+puts [$dev2 get]
+
+#####
+
+set dev [DeviceRole lockin1:XY gauge]
+
+puts [$dev get]
+
+puts "get_ranges:  [$dev list_ranges]"
+puts "get_tconsts: [$dev list_tconsts]"
+puts "get_status:  [$dev get_status]"
+puts "get_range:   [$dev get_range]"
+puts "get_tconst:  [$dev get_tconst]"
+
+puts [$dev get_auto]
+
+puts "get_range:  [$dev get_range]"
+
+$dev set_range 5e-4
+puts "get_range:   [$dev get_range]"
+
