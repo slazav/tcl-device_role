@@ -463,7 +463,7 @@ itcl::class sr830 {
   ############################
   method get {{auto 0}} {
     # If channel is 1 or 2 read auxilary input:
-    if {$chan==1 || $chan==2} { return [$dev cmd "AUXO?${chan}"] }
+    if {$chan==1 || $chan==2} { return [$dev cmd "OAUX?${chan}"] }
 
     # If autorange is needed, use AGAN command:
     if {$auto} {$dev cmd "AGAN"; after 100}
