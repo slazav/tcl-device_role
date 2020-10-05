@@ -158,15 +158,15 @@ itcl::class keysight {
 
 
   ############################
-  method get_conf_list {} {
+  method conf_list {} {
     return [list {
-      {auto_range} {bool}
-      {range}      {string} {}
-      {npl_cycles} {list}   {0.02 0.2 1 10 100 MIN MAX}
+      {auto_range} bool
+      {range}      string
+      {npl_cycles} {0.02 0.2 1 10 100 MIN MAX}
     }]
   }
 
-  method get_conf {name} {
+  method conf_get {name} {
     switch -exact -- $name {
       auto_range { return [$dev cmd "$func:RANGE:AUTO?"]}
       range      { return [expr {[$dev cmd "$func:RANGE?"]}]}
@@ -175,7 +175,7 @@ itcl::class keysight {
     }
   }
 
-  method set_conf {name val} {
+  method conf_set {name val} {
     switch -exact -- $name {
       auto_range { dev_set_par $dev "$func:RANGE:AUTO" $val}
       range      { dev_set_par $dev "$func:RANGE" $val}
