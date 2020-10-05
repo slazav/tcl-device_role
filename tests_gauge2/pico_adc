@@ -1,0 +1,21 @@
+#!/usr/bin/tclsh
+
+# Measure channel 1+2 in differential mode
+set devname adc1:1d,3s,4s
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+set dev [DeviceRole $devname gauge2]
+
+$dev conf_set tconst 60
+puts "tconst: [$dev conf_get tconst]"
+
+$dev conf_set range 1250
+puts "range:  [$dev conf_get range]"
+
+puts [$dev get]
+
+$dev conf_set tconst 180
+puts [$dev get]
+
+puts [$dev conf_list]

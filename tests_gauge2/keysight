@@ -1,0 +1,24 @@
+#!/usr/bin/tclsh
+
+# Keysight/Agilent/Keythley-2000 multimeters
+
+source inc.tcl
+
+set dev [DeviceRole mult1:DCV gauge2]
+
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+
+puts [$dev conf_get autorange]
+puts [$dev conf_get range]
+
+puts [$dev conf_get autorange]
+puts [$dev conf_get nplc]
+
+
+$dev conf_set range 1
+puts [$dev conf_get range]
+puts [$dev get]
