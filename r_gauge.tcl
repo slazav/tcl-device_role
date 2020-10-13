@@ -197,6 +197,9 @@ itcl::class keysight {
 # ID strings:
 # KEITHLEY INSTRUMENTS INC.,MODEL 2182A,1193143,C02 /A02
 # Use channels DCV1 DCV2
+#
+# Tested:
+#   2020/10/13, Keythley-2182A,   V.Z.
 
 itcl::class keithley_nanov {
   inherit interface
@@ -207,17 +210,15 @@ itcl::class keithley_nanov {
 
   constructor {d ch id} {
     switch -exact -- $ch {
-      DCV1 {  set cmd "conf:volt:DC\nsens:chan 1\nsens:volt:rang:auto" }
-      DCV2 {  set cmd "conf:volt:DC\nsens:chan 2\nsens:volt:rang:auto" }
-      default {
-        error "$this: bad channel setting: $ch"
-        return
-      }
+      DCV1 { set chan 1 }
+      DCV2 { set chan 2 }
+      default { error "$this: bad channel setting: $ch" }
     }
     set dev $d
-    set valnames "$ch"
-    $dev cmd "samp:count 1"
-    $dev cmd $cmd
+    dev_check $dev "conf:volt:DC"
+    dev_check $dev "sens:chan $chan"
+    dev_check $dev "sens:volt:rang:auto 1"
+    dev_check $dev "samp:count 1"
   }
 
   ############################
