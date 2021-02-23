@@ -1,0 +1,93 @@
+EastTester ET4502 LCR meter
+
+=========================
+Command set is unknown.
+
+*idn?   -- "ZC,ET4502         ,V1.00.1935.007,V1.02.1935.003,10761915001    "
+volt[?] -- voltage [mV]
+freq[?] -- frequency [Hz]
+comp[?] -- ON|OFF
+aper[?] -- slow fast med
+
+fetch?
+
+syst:beep
+syst:beep:stat[?] -- ON|OFF
+syst:vers?        -- version? 1999.0
+
+
+=========================
+
+# udevadm info -ap /sys/bus/usb/devices/1-2.3:1.1 
+
+Udevadm info starts with the device specified by the devpath and then
+walks up the chain of parent devices. It prints for every device
+found, all possible attributes in the udev rules key format.
+A rule to match, can be composed by the attributes of the device
+and the attributes from one single parent device.
+
+  looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.3/1-2.3:1.1':
+    KERNEL=="1-2.3:1.1"
+    SUBSYSTEM=="usb"
+    DRIVER=="cdc_acm"
+    ATTR{bInterfaceClass}=="0a"
+    ATTR{bInterfaceSubClass}=="00"
+    ATTR{bInterfaceProtocol}=="00"
+    ATTR{supports_autosuspend}=="1"
+    ATTR{bAlternateSetting}==" 0"
+    ATTR{bInterfaceNumber}=="01"
+    ATTR{authorized}=="1"
+    ATTR{bNumEndpoints}=="02"
+
+  looking at parent device '/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.3':
+    KERNELS=="1-2.3"
+    SUBSYSTEMS=="usb"
+    DRIVERS=="usb"
+    ATTRS{tx_lanes}=="1"
+    ATTRS{product}=="STM32 Virtual COM Port  "
+    ATTRS{bMaxPower}=="100mA"
+    ATTRS{avoid_reset_quirk}=="0"
+    ATTRS{devpath}=="2.3"
+    ATTRS{maxchild}=="0"
+    ATTRS{bmAttributes}=="c0"
+    ATTRS{idProduct}=="5740"
+    ATTRS{busnum}=="1"
+    ATTRS{devnum}=="90"
+    ATTRS{bDeviceClass}=="02"
+    ATTRS{urbnum}=="13"
+    ATTRS{bConfigurationValue}=="1"
+    ATTRS{version}==" 2.00"
+    ATTRS{bMaxPacketSize0}=="64"
+    ATTRS{removable}=="removable"
+    ATTRS{bDeviceSubClass}=="00"
+    ATTRS{speed}=="12"
+    ATTRS{serial}=="48F7545B3737"
+    ATTRS{bNumInterfaces}==" 2"
+    ATTRS{ltm_capable}=="no"
+    ATTRS{authorized}=="1"
+    ATTRS{quirks}=="0x0"
+    ATTRS{bDeviceProtocol}=="00"
+    ATTRS{configuration}==""
+    ATTRS{manufacturer}=="STMicroelectronics"
+    ATTRS{bNumConfigurations}=="1"
+    ATTRS{bcdDevice}=="0200"
+    ATTRS{idVendor}=="0483"
+    ATTRS{rx_lanes}=="1"
+
+=========================
+Example of udev rules:
+
+# ET4502 LCR meter
+ACTION=="add", SUBSYSTEMS=="usb",\
+  ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740",\
+  GROUP="users", SYMLINK+="lcr_meter"
+
+=========================
+
+Device2 setting:
+
+lcr_meter  serial_simple -dev /dev/lcr_meter
+
+There is a problem with error messages: in write command
+device returns answer ("cmd err") only in case of error.
+

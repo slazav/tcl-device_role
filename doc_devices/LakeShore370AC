@@ -1,0 +1,32 @@
+## *IDN?
+
+LSCI,MODEL370,370A5K,04102008
+
+## Status registers:
+
+*ESE? event status enable
+*ESR? standard event status register
+*SRE? service request enable register
+*STB? status byte
+*TST? self-test status 0/1
+
+*OPC? -- wait until operation is completed?
+
+## Analog output
+
+ANALOG/ANALOG?
+0,0,01,1,+0.00000E+00,+0.00000E+00,+0.0000
+- polarity: 0-unipolar, 1-bipolar
+- mode: 0-off, 1-channel, 2-manual, 3-zone
+- channel 1..16
+...
+
+## Curve loading
+CRVDEL
+CRVHDR / CRVHDR? -- curve header
+CRVPT
+
+## alarm and beeping
+ALARM
+BEEP
+

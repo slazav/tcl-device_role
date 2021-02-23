@@ -1,0 +1,252 @@
+*IDN?: Agilent VS leak detector
+?ALL: 
+
+IONCHAMBER 230.2
+
+EMISSION 0.824
+
+OFFSET -15347  -124305 
+
+GAIN 1.3
+?AZ<0: on  
+?CALOK: Yes
+?CPLOCKOUT: off 
+?CURRDATE: 5 08/31/2018 19:00:47.47 2 
+?DISPLAY: both 
+?EMISSION: 0.824
+?EXPONENT: -11
+?EXTLEAK: 1.4E-07
+?FIL1HOURS: 474 
+?FIL2HOURS: 72 
+?GAIN: 1.3
+?INTEXT:  internal 
+?IONCHAMBER: 230.2
+?LANGUAGE: 0 
+?LEAK: 1.73E-08
+?LKEXPIRE: 6 6 2019 
+?LEAKTEMP: 21.6
+?LP: 1.73E-08 000002 000001 
+?LPV: 1.73E-08 000002 000001 MIDSTAGE    
+?LPVR: 1.73E-08 000002 000001 MIDSTAGE    0
+?LPVRM: 1.73E-08 000002 000001 MIDSTAGE    0.
+?LPVRJG: 1.73E-08 000002 000001 MIDSTAGE    0 .
+?LPVRJGC: 1.73E-08 000002 000001 MI0 . 
+?LPVRJGCTbTpV: 1.73E-08 000002 000001 MI0 .    03FF 0
+?OFFSET: -15347  -124305 
+?PREHEAT: 0 
+?PREHEAT-TIME: 5 
+?PRESSURES: 
+
+Test port (mTorr): 2 
+
+Spectrometer (uTorr): 1 
+?PWDONOFF: off 
+?RANGE: -07
+?AREJECT: 2.0E-08
+?1REJECT: 1.0E-08
+?2REJECT: 2.0E-08
+?3REJECT: 3.0E-08
+?4REJECT: 5.0E-00
+?>1REJECT: off 
+?>2REJECT: off 
+?>3REJECT: off 
+?>4REJECT: off 
+?RSONOFF: on  
+?SETUP: 
+
+Turbo Speed (RPM): 69960  
+
+range       -07 auto   
+
+exponent    -11
+
+reject      1.0E-08 2.0E-08 3.0E-08 5.0E-00 2.0E-08
+
+stdleak     1.6E-07
+
+output      linear 
+
+filament    One Lit  internal 
+?SOFTSTART: off 
+?SPLITFLOW: off 
+?STDLEAK: 1.6E-07
+?SYSPWD: 777777
+?TURBO: 
+
+Turbo Ready      
+
+Turbo No Fault   
+
+Turbo Speed (RPM): 69960  
+
+Turbo Temp (Celsius): 27  
+
+Turbo Life (Hrs): 643  
+?TURBOHR: 643 
+?VALVESTATE: MIDSTAGE    
+VER: LD03.12 931D00 
+?VOLUMEONOFF: off 
+WHYNOCAL: GainTooHigh 
+?0ENABLE: off 
+SERVICE1: 
+
+Current Date: 5 08/31/2018 19:00:51.83 2 
+
+Pump Serviced Date: 6 11 2015 
+
+Pump's Operating Hours Since Service: 547 
+
+
+
+IONCHAMBER 230.2
+
+EMISSION 0.824
+
+OFFSET -15347  -124305 
+
+GAIN 1.3
+
+
+
+LPV: 1.72E-08 000002 000001 MIDSTAGE    
+
+
+
+Turbo Speed (RPM): 69960  
+
+range       -07 auto   
+
+exponent    -11
+
+reject      1.0E-08 2.0E-08 3.0E-08 5.0E-00 2.0E-08
+
+stdleak     1.6E-07
+
+output      linear 
+
+filament    One Lit  internal 
+
+
+
+Turbo Ready      
+
+Turbo No Fault   
+
+Turbo Speed (RPM): 69960  
+
+Turbo Temp (Celsius): 27  
+
+Turbo Life (Hrs): 643  
+
+
+
+STD_LEAK_VALVE Closed 
+
+MIDSTAGE_VALVE Open   
+
+FORELINE_VALVE Open   
+
+CONTRAFLOW_VALVE Closed 
+
+VENT_VALVE Closed 
+
+DS42_VALVE Open   
+
+
+
+Current Cal Leak Temperature: 24.7
+
+Calibration OK?: Yes
+
+
+
+LR Reject #1: off 
+
+LR Reject #2: off 
+
+LR Reject #3: off 
+
+Pressure Reject #4: off 
+
+Audio Reject: off 
+
+
+SERVICE2: 
+
+Version: LD03.12 931D00 
+
+Calibration Mode:  full  
+
+Calibration Type:  internal 
+
+AZ<0: on  
+
+Zero Enabled: off 
+
+Contra Xfer: 1.0E-00
+
+Midstage Xfer: 1.0E-01
+
+Std Leak: 1.6E-07
+
+External Leak: 1.4E-07
+
+Leak Rate: 1.72E-08
+
+Calibrated Leak Expiration: 6 6 2019 
+
+Leak Calibrated at Temperature: 21.6
+
+Temperature Factor: +0.8
+
+LR Reject Set Point #1: off  1.0E-08  High 
+
+LR Reject Set Point #2: off  2.0E-08  High 
+
+LR Reject Set Point #3: off  3.0E-08  High 
+
+Pressure Reject Set Point #4: off  5.0E-00  High 
+
+Audio Reject Set Point: on   2.0E-08  High 
+
+Auto Sequencer: off 
+
+Sequencer Rough Time: 010
+
+Sequencer Test Time: 010
+
+Split Flow: off 
+
+Leak Used in SF: 0.0E-11
+
+Ctrl Panel Lock-Out: off 
+
+Vent Lock-Out : off 
+
+Speaker Volume: off 
+
+Range Stop: -11 on  
+
+Manual Exponent: -11  auto   
+
+High Pressure Test: off 
+
+Display Mode: both 
+
+Language: ENG  
+
+Password Status: off 
+
+Password: 777777
+
+VGAIN: 31 
+
+I/O Board: 0 
+
+LD Type: 0 
+
+Pre-Heat Ion Source 5  Minutes
+
+Password Level: 1 
+
+
