@@ -1,0 +1,22 @@
+#!/usr/bin/tclsh
+
+# EastTester ET4502 LCR meter
+
+source inc.tcl
+
+set dev [DeviceRole lcr_meter:DCV1 gauge2]
+
+puts [$dev conf_get aper]
+puts [$dev conf_get freq]
+puts [$dev conf_get volt]
+
+puts [$dev conf_set aper SLOW]
+puts [$dev conf_set freq 2000]
+puts [$dev conf_set volt 900]
+
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+
+

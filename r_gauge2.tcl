@@ -1124,4 +1124,58 @@ itcl::class leak_asm340 {
 }
 
 ######################################################################
+# EastTester ET4502 LCR meter
+#
+# I do not know how to set different modes,
+# I will always read two numbers from the screen.
+# TODO: conf
+
+itcl::class lcr_et4502 {
+  inherit interface
+  proc test_id {id} {
+    if {[regexp {,ET4502} $id]} {return 1}
+  }
+
+  constructor {d ch id} {
+    # channels are not supported now
+    set names [list "X" "Y"]
+    set dev $d
+  }
+
+  method conf_list {} {
+    return [list {
+      freq    int
+      volt    vloat
+      apert   {SLOW MED FAST}
+      names      const
+    }]
+  }
+
+  method conf_get {name} {
+    switch -exact -- $name {
+      freq  { return [$dev cmd freq?]}
+      volt  { return [$dev cmd volt?]}
+      aper  { return [$dev cmd aper?]}
+      names { return $names }
+      default {error "unknown configuration name: $name"}
+    }
+  }
+
+  method conf_set {name val} {
+    switch -exact -- $name {
+      freq  { [$dev cmd freq $val]}
+      volt  { [$dev cmd volt $val]}
+      aper  { [$dev cmd aper $val]}
+      default {error "unknown configuration name: $name"}
+    }
+  }
+
+  ############################
+  method get {} {
+    return [$dev cmd fetch?]
+  }
+}
+
+
+######################################################################
 } # namespace
