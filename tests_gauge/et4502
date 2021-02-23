@@ -1,0 +1,14 @@
+#!/usr/bin/tclsh
+
+# EastTester ET4502 LCR meter
+
+source inc.tcl
+
+set dev [DeviceRole lcr_meter:DCV1 gauge]
+
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+puts [$dev get]
+
+
