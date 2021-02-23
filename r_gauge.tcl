@@ -1087,7 +1087,7 @@ itcl::class lcr_et4502 {
 
   ############################
   method get {} {
-    return [$dev cmd fetch?]
+    return [join [split [$dev cmd fetch?] {,}]]
   }
 }
 

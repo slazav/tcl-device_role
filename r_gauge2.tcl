@@ -1163,16 +1163,16 @@ itcl::class lcr_et4502 {
 
   method conf_set {name val} {
     switch -exact -- $name {
-      freq  { [$dev cmd freq $val]}
-      volt  { [$dev cmd volt $val]}
-      aper  { [$dev cmd aper $val]}
+      freq  { $dev cmd freq $val}
+      volt  { $dev cmd volt $val}
+      aper  { $dev cmd aper $val}
       default {error "unknown configuration name: $name"}
     }
   }
 
   ############################
   method get {} {
-    return [$dev cmd fetch?]
+    return [join [split [$dev cmd fetch?] {,}]]
   }
 }
 
