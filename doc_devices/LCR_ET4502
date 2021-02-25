@@ -1,19 +1,41 @@
 EastTester ET4502 LCR meter
 
 =========================
-Command set is unknown.
 
-*idn?   -- "ZC,ET4502         ,V1.00.1935.007,V1.02.1935.003,10761915001    "
-volt[?] -- voltage [mV]
-freq[?] -- frequency [Hz]
-comp[?] -- ON|OFF
-aper[?] -- slow fast med
+*IDN?   -- "ZC,ET4502         ,V1.00.1935.007,V1.02.1935.003,10761915001    "
+           (manufacturer, model, firmware, hardware, sn)
 
-fetch?
+SYSTem:VERSion?         -- version, 1999.0
+SYSTem:BEEPer:IMMediate
+SYSTem:BEEPer:STATe     -- ON | OFF
 
-syst:beep
-syst:beep:stat[?] -- ON|OFF
-syst:vers?        -- version? 1999.0
+APERture[?]             -- SLOW | FAST | MEDium
+BIAS:VOLTage[:LEVel][?] -- 0..1500mV
+
+COMParator[:STATe]      -- ON | OFF
+COMParator:TOLerance:BIN?
+COMParator:TOLerance:NOMinal[?] -- value for the comparator
+COMParator:TOLerance:RANGe:CH[?]
+
+CORRection:OPEN[:EXECute]
+CORRection:SHORt[:EXECute]
+
+DISPlay:PAGE[?]  -- MEASurement | COMPset | SYSTem
+
+FETCh?
+VOLTage[:LEVel][?]  -- 10..2000 mV
+FREQuency[:CW][?]   -- 10..100000 Hz
+
+FUNCtion:DEV:MODE   -- relative (deviation) mode: ON | OFF
+FUNCtion:IMPedance:A[?]  -- AUTO | R | C | L | Z | DCR (dc res.) | ECAP (electrolutic cap.)
+FUNCtion:IMPedance:B[?]  -- AUTO | X (reactance) | D (dissip.fact.)| Q (qual.fact) |
+                            THR (angle) | ESR (equiv.ser.res.)
+FUNCtion:IMPedance:EUUivalent[?]   -- SERial | PALlel
+FUNCtion:IMPedance:RANGe:AUTO[?]   -- ON | OFF
+FUNCtion:IMPedance:RANGe:VALue[?]  -- 30,100,300,1000,3000,10000,30000,100000 Ohm
+
+:LOCal
+:REMote
 
 
 =========================
