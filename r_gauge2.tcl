@@ -1169,7 +1169,7 @@ itcl::class lcr_et4502 {
   method conf_list {} {
     return [list {
       freq    int
-      volt    vloat
+      volt    float
       apert   {SLOW MED FAST}
       names      const
     }]
