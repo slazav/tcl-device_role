@@ -4,7 +4,7 @@
 
 source inc.tcl
 
-set dev [DeviceRole lcr_meter:DCV1 gauge]
+set dev [DeviceRole lcr_meter:R-Q gauge]
 
 puts [$dev get]
 puts [$dev get]
