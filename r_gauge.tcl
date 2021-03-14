@@ -1081,8 +1081,32 @@ itcl::class lcr_et4502 {
 
   constructor {d ch id} {
     # channels are not supported now
-    set names [list "X" "Y"]
+    set c [split $ch {-}]
+    if {[llength $c] == 0} {
+      set A "C"
+      set B "Q"
+    }\
+    elseif {[llength $c] == 2} {
+      set A [lindex $c 0]
+      set B [lindex $c 1]
+      if {[lsearch -exact {R C L Z DCR ECAP} $A] < 0} {
+        error "lcr_et4502: wrong A measurement: $A, should be one of R C L Z DCR ECAP"
+      }
+      if {[lsearch -exact {X D Q THR ESR} $B] < 0} {
+        error "lcr_et4502: wrong B measurement: $B, should be one of X D Q THR ESR"
+      }
+    }\
+    else {
+      error "lcr_et4502: bad channel setting: $ch"
+    }
+    set names [list $A $B]
     set dev $d
+    $dev cmd FUNC:DEV:MODE OFF
+    $dev cmd FUNC:IMP:A $A
+    $dev cmd FUNC:IMP:B $B
+    $dev cmd FUNC:IMP:RANG:AUTO ON
+    $dev cmd FUNC:IMP:EQU SER
+    after 100
   }
 
   ############################
