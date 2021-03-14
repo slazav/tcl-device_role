@@ -117,10 +117,8 @@ itcl::class keysight {
   }
 
   method set_ac {freq volt {offs 0} {phase {}}} {
-    dev_err_clear $dev
-    $dev cmd "${sour_pref}APPLY:SIN $freq,$volt,$offs"
+    dev_check $dev "${sour_pref}APPLY:SIN $freq,$volt,$offs"
     if {$phase ne {}} {set_phase $phase}
-    dev_err_check $dev
   }
 
   method get_volt  {}  { return [$dev cmd "${sour_pref}VOLT?"] }
