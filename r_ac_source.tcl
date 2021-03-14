@@ -33,7 +33,7 @@ itcl::class interface {
   method set_phase {v} {}
 
   method set_out {state} {};   # turn output on/off (without affecting other set/get commands)
-  method get_out {} {}         # get output state
+  method get_out {} {};        # get output state
 
   # Set state of front-panel sync connector (1|0)
   # This may be useful for 2-channel devices where sync can follow
@@ -77,13 +77,13 @@ itcl::class TEST {
   method get_freq  {} { return $freq }
   method get_offs  {} { return $offs }
   method get_phase {} { return $phase }
-  method get_out   {} { return onoff }
+  method get_out   {} { return $onoff }
 
   method set_volt {v}  { set volt $v }
   method set_freq {v}  { set freq $v }
   method set_offs {v}  { set offs $v }
   method set_phase {v} { set phase $v }
-  method set_out {v} { set onoff [eval {$v?1:0}] }
+  method set_out {v} { set onoff [expr {$v?1:0}] }
 
   method set_sync {state} { }
 }
