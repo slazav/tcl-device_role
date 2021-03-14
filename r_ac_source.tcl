@@ -18,8 +18,6 @@ itcl::class interface {
 
   # methods which should be defined by driver:
   method set_ac {freq volt {offs 0}} {};      # reconfigure output, set frequency, voltage, offset
-  method off       {} {};    # turn off the signal
-  method on        {} {};    # turn on the signal
 
   method get_volt  {} {};    # get voltage value
   method get_freq  {} {};    # get frequency value
@@ -31,7 +29,14 @@ itcl::class interface {
   method set_offs {v}  {}
   method set_phase {v} {}
 
+  method set_out {state} {};   # turn output on/off (without affecting other set/get commands)
+  method get_out {} {}         # get output state
+
+  # Set state of front-panel sync connector (1|0)
+  # This may be useful for 2-channel devices where sync can follow
+  # only one of the channels.
   method set_sync  {state} {}; # set state of front-panel sync connector
+
 }
 
 ######################################################################
@@ -62,19 +67,19 @@ itcl::class TEST {
     set freq $f
     set volt $v
     set offs $o
-    set onoff 1
   }
-  method off {} { set onoff 0 }
-  method on  {} { set onoff 1 }
-  method get_volt {} { return [expr {$onoff ? $volt : 0}]}
-  method get_freq {} { return $freq }
-  method get_offs {} { return [expr {$onoff ? $offs : 0}] }
+
+  method get_volt  {} { return $volt }
+  method get_freq  {} { return $freq }
+  method get_offs  {} { return $offs }
   method get_phase {} { return $phase }
+  method get_out   {} { return onoff }
 
   method set_volt {v}  { set volt $v }
   method set_freq {v}  { set freq $v }
   method set_offs {v}  { set offs $v }
   method set_phase {v} { set phase $v }
+  method set_out {v} { set onoff [eval {$v?1:0}] }
 
   method set_sync {state} { }
 }
@@ -111,40 +116,25 @@ itcl::class keysight {
     dev_err_clear $dev
     $dev cmd "${sour_pref}APPLY:SIN $freq,$volt,$offs"
     dev_err_check $dev
-    dev_set_par $dev "OUTP${chan}" "1"
   }
-  method off {} {
-#  # For Keysight generators it maybe useful to set VOLT to $min_v
-#  # to reduce signal leakage.
-#  # But this can work in some unexpected way if 
-#  # voltage will be read and changed in the "off" state.
-#    set old_v [get_volt]
-#    dev_set_par $dev "${sour_pref}VOLT" $min_v
-    dev_set_par $dev "OUTP${chan}" 0
-  }
-  method on {} {
-#    dev_set_par $dev "${sour_pref}VOLT" $old_v
-    dev_set_par $dev "OUTP${chan}" 1
-  }
-  method get_volt {}  {
-    if {[$dev cmd "OUTP${chan}?"] == 0} {return 0}
-    return [$dev cmd "${sour_pref}VOLT?"]
-  }
+
+  method get_volt  {}  { return [$dev cmd "${sour_pref}VOLT?"] }
   method get_freq  {} { return [$dev cmd "${sour_pref}FREQ?"] }
   method get_offs  {} { return [$dev cmd "${sour_pref}VOLT:OFFS?"] }
   method get_phase {} { return [$dev cmd "${sour_pref}PHAS?"] }
+  method get_out   {} { return [$dev cmd "OUTP${chan}?"] }
 
-  method set_volt {v}  {
-    if {$v==0} { off; return}
-    dev_set_par $dev "${sour_pref}VOLT" $v
-    dev_set_par $dev "OUTP${chan}" 1
-  }
+  method set_volt {v}  { dev_set_par $dev "${sour_pref}VOLT" $v }
   method set_freq {v}  { dev_set_par $dev "${sour_pref}FREQ" $v }
   method set_offs {v}  { dev_set_par $dev "${sour_pref}VOLT:OFFS" $v }
-
   method set_phase {v} {
     set v [expr $v-int($v/360.0)*360]
     dev_set_par $dev "${sour_pref}PHAS" $v
+  }
+  method set_out {v} {
+  # For Keysight generators it maybe useful to switch to burst mode
+  # to reduce signal leakage.
+    dev_set_par $dev "OUTP${chan}" [expr {$v?1:0}]
   }
 
   method set_sync {state} {
