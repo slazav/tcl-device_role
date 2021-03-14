@@ -17,7 +17,10 @@ itcl::class interface {
   public variable min_v; # min voltage
 
   # methods which should be defined by driver:
-  method set_ac {freq volt {offs 0}} {};      # reconfigure output, set frequency, voltage, offset
+
+  # Reconfigure output, set frequency, voltage, offset
+  # If phase is not empty, set phase as well:
+  method set_ac {freq volt {offs 0} {phase {}}} {};
 
   method get_volt  {} {};    # get voltage value
   method get_freq  {} {};    # get frequency value
@@ -61,12 +64,13 @@ itcl::class TEST {
     set max_v 10
   }
 
-  method set_ac {f v {o 0}} {
+  method set_ac {f v {o 0} {p {}}} {
     if {$v < $min_v} {set v $min_v}
     if {$v > $max_v} {set v $max_v}
     set freq $f
     set volt $v
     set offs $o
+    if {$p ne {}} {set_phase $p}
   }
 
   method get_volt  {} { return $volt }
@@ -112,9 +116,10 @@ itcl::class keysight {
     dev_set_par $dev "OUTP${chan}:LOAD"      "INF"
   }
 
-  method set_ac {freq volt {offs 0}} {
+  method set_ac {freq volt {offs 0} {phase {}}} {
     dev_err_clear $dev
     $dev cmd "${sour_pref}APPLY:SIN $freq,$volt,$offs"
+    if {$phase ne {}} {set_phase $phase}
     dev_err_check $dev
   }
 
