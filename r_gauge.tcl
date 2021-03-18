@@ -1117,4 +1117,57 @@ itcl::class lcr_et4502 {
 
 
 ######################################################################
+# Andeen Hagerling AH2500 capacitance bridge.
+#
+# Configuration for device2 server:
+#   cap_br  gpib -board <N> -addr <M> -idn AH2500 -read_cond always -delay 0.05
+
+itcl::class ah2500 {
+  inherit interface
+  proc test_id {id} {
+    if {[regexp {^AH2500$} $id]} {return 1}
+  }
+
+  constructor {d ch id} {
+    set dev $d
+    if {$ch ne {}} {
+      error "ah2500: no channels supported"
+    }
+  }
+
+  ############################
+  method get {} {
+    regexp {C=\s*([0-9.]+)\s+(PF)\s+L=\s*([0-9.]+)\s*(NS)} \
+      [$dev cmd "SI"] X CV CU LV LU
+    return "$CV $LV"
+  }
+
+  method conf_list {} {
+    return [list {
+      volt    int
+      aver    {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15}
+      names   const
+    }]
+  }
+
+  method conf_get {name} {
+    switch -exact -- $name {
+      volt  { return [$dev cmd "SH V"]}
+      aver  { return [$dev cmd "SH AV"]}
+      names { return $names }
+      default {error "unknown configuration name: $name"}
+    }
+  }
+
+  method conf_set {name val} {
+    switch -exact -- $name {
+      volt  { $dev cmd volt "VO $val"}
+      aper  { $dev cmd aper "AV $val"}
+      default {error "unknown configuration name: $name"}
+    }
+  }
+
+}
+
+######################################################################
 } # namespace
