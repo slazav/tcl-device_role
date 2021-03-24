@@ -117,8 +117,10 @@ itcl::class tenma_ps {
 
   method get_stat {} {
     set n [$dev cmd "STATUS?"]
-    if {($n&(1<<6)) == 0} {return "OFF"}
-    if {($n&1) == 1} {return "CV"}
+    binary scan $n c nv;          # convert char -> 8-bit integer
+    set nv [expr { $nv & 0xFF }]; # convert to unsigned
+    if {($nv&(1<<6)) == 0} {return "OFF"}
+    if {($nv&1) == 1} {return "CV"}
     return "CC"
   }
 
