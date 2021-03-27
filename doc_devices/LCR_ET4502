@@ -110,8 +110,5 @@ ACTION=="add", SUBSYSTEMS=="usb",\
 
 Device2 setting:
 
-lcr_meter  serial_simple -dev /dev/lcr_meter
-
-There is a problem with error messages: in write command
-device returns answer ("cmd err") only in case of error.
+lcr_meter  serial_et -dev /dev/lcr_meter
 
