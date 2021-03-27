@@ -25,9 +25,6 @@ package require Device2
 
 namespace eval device_role {}
 
-# Array for counting devices.
-variable device_counter
-
 ######################################################################
 # create the DeviceRole object
 proc DeviceRole {name role} {
@@ -44,41 +41,14 @@ proc DeviceRole {name role} {
   # return test device
   if {$name == "TEST"} {return [${n}::TEST #auto ${name} $chan {}]}
 
-
-  ## Create Device if needed, set device_counter.
-  # The reference counter is used because many drivers
-  # can work with a single device (different channels,
-  # different roles) and device can be already opened
-  # Is device exists?
-  global device_counter
-  if {[info commands $name]!={}} {
-    # is it a Device?
-    if {[lindex [$name info heritage] end] != {::Device}} {
-      error "Not a Device object: $name"
-    }
-    # is counter exists (other role uses the device)?
-    if {[array get device_counter $name] != {}} {
-      incr device_counter($name)
-    } else {
-      # somebody else uses the device, start from 2
-      set device_counter($name) 2
-    }
-  }\
-  else {
-    # Reference counter should be unset for closed devices.
-    if {[array get device_counter $name] != {}} {
-      error "DeviceRole reference counter is non-zero for non-opened device: $name"
-    }
-    # open the device
-    Device $name
-    set device_counter($name) 1
-  }
-
-  # puts "device_counter($name) -> $device_counter($name)"
-
   # Ask the Device for ID.
-  set ID [$name cmd *IDN?]
+  set ID [Device2::ask $name *IDN?]
   if {$ID == {}} {error "Can't get device id: $name"}
+
+  # old-style interface
+  if {[info commands $name] eq {}} { Device $name}
+  if {[lindex [$name info heritage] end] != {::Device}} {
+    error "can't create device: non-device object exists: $name" }
 
   # Find all classes in the correct namespace.
   # Try to match ID string, return an object of the correct class.
@@ -102,31 +72,9 @@ proc DeviceRoleDelete {name} {
 
   if {![DeviceRoleExists $name]} {error "Not a DeviceRole object: $name"}
 
-  # Get the device object (empty for TEST devices):
+  # Close device (empty for TEST devices):
   set d [$name get_device]
-  global device_counter
-  if {$d!={}} {
-    # Device should exists
-    if {[info commands $d]=={}} {
-      error "DeviceRoleDelete: Device is already closed: $d"
-    }
-    # Device should have the proper type
-    if {[lindex [$d info heritage] end] != {::Device}} {
-      error "DeviceRoleDelete: Not a Device object: $d"
-    }
-    # Reference counter for the device should exist
-    if {[array get device_counter $d] == {}} {
-      error "DeviceRoleDelete: No reference counter for the device: $d"
-    }
-    # Decrease the reference counter
-    incr device_counter($d) -1
-      # puts "device_counter($d) <- $device_counter($d)"
-    # Close the device if needed:
-    if {$device_counter($d)<1} {
-      itcl::delete object $d
-      array unset device_counter $d
-    }
-  }
+  if {$d ne {}} {Device2::release $d}
 
   # delete the DeviceRole object:
   itcl::delete object $name
@@ -140,8 +88,8 @@ itcl::class device_role::base_interface {
   # Drivers should provide constructor with "device" and "channel" parameters
   constructor {} {}
 
-  method lock {} {$dev lock}
-  method unlock {} {$dev unlock}
+  method lock {} {Device2::lock $dev}
+  method unlock {} {Device2::unlock $dev}
   method get_device {} {return $dev}
 
   # Get list of configuation options.
