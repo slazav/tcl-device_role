@@ -32,7 +32,7 @@ FUNCtion:DEV:MODE   -- relative (deviation) mode: ON | OFF
 FUNCtion:IMPedance:A[?]  -- AUTO | R | C | L | Z | DCR (dc res.) | ECAP (electrolutic cap.)
 FUNCtion:IMPedance:B[?]  -- AUTO | X (reactance) | D (dissip.fact.)| Q (qual.fact) |
                             THR (angle) | ESR (equiv.ser.res.)
-FUNCtion:IMPedance:EUUivalent[?]   -- SERial | PALlel
+FUNCtion:IMPedance:EQUivalent[?]   -- SERial | PALlel
 FUNCtion:IMPedance:RANGe:AUTO[?]   -- ON | OFF
 FUNCtion:IMPedance:RANGe:VALue[?]  -- 30,100,300,1000,3000,10000,30000,100000 Ohm
 
