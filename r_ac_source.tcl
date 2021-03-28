@@ -40,6 +40,10 @@ itcl::class interface {
   # only one of the channels.
   method set_sync  {state} {}; # set state of front-panel sync connector
 
+  method make_widget {name tkroot args} {
+    return [device_role::ac_source::w_ac_source $name $this $tkroot {*}$args]
+  }
+
 }
 
 ######################################################################

@@ -1,0 +1,14 @@
+#!/usr/bin/wish
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl ../w_*.tcl] {source $f}
+
+#set dev1 [DeviceRole gen9 ac_source]
+set dev1 [DeviceRole TEST ac_source]
+
+$dev1 make_widget w .g\
+ -title {Generator}\
+ -show_offs 1\
+ -show_phase 0\
+
+pack .g
+
