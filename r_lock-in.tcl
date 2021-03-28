@@ -97,7 +97,7 @@ itcl::class TEST {
   inherit interface
   proc test_id {id} {}
 
-  constructor {d ch id} {
+  constructor {d ch id args} {
     set M 1
   }
   destructor {}

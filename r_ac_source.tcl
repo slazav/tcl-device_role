@@ -119,7 +119,7 @@ itcl::class TEST {
   proc test_id {id} {}
   variable onoff
 
-  constructor {d ch id} {
+  constructor {d ch id args} {
     set dev $d
     set freq 1000
     set volt 0.1
@@ -150,7 +150,7 @@ itcl::class keysight {
   # we use Device from keysight_gen class
   method get_device {} {return $keysight_gen::dev}
 
-  constructor {d ch id} {keysight_gen::constructor $d $ch $id} {
+  constructor {d ch id args} {keysight_gen::constructor $d $ch $id} {
     set max_v 20
     set min_v 0.002
     dev_set_par $dev "${sour_pref}BURST:STATE" "0"
