@@ -1,15 +1,17 @@
 ######################################################################
 # Usage:
 #
-#   set dev [DeviceRole <name>:<channel> <role>]
+#   set dev [DeviceRole <name>:<channel> <role> <options> ...]
 #
 #  <name>    - Device name in Device library,
 #              should me configured in /etc/devices.txt
 #  <channel> - A parameter for the driver. Can be a physical channel
 #              for multi-channel devices, operation mode, or something
 #              else. See documenation/code of specific drivers.
+#              Obsoleted, should be replaces with options
 #  <role>    - A "role", some interface supported by the device
 #              such as "gauge", "power_supply", "ac_source", etc.
+#  <options> - pairs of device-specific "-<key> <value>" options.
 #  <dev>     - a returned object which implements the role interface.
 #
 # Example:
@@ -28,7 +30,7 @@ namespace eval device_role {}
 
 ######################################################################
 # create the DeviceRole object
-proc DeviceRole {name role} {
+proc DeviceRole {name role args} {
   ## parse device name:
   set chan {}
   if {[regexp {^([^:]*):(.*)} $name x n c]} {
@@ -40,7 +42,7 @@ proc DeviceRole {name role} {
   set n ::device_role::${role}
 
   # return test device
-  if {$name == "TEST"} {return [${n}::TEST #auto ${name} $chan {}]}
+  if {$name == "TEST"} {return [${n}::TEST #auto ${name} $chan {} {*}$args]}
 
   # Ask the Device for ID.
   set ID [Device2::ask $name *IDN?]
@@ -54,7 +56,7 @@ proc DeviceRole {name role} {
   # Find all classes in the correct namespace.
   # Try to match ID string, return an object of the correct class.
   foreach m [itcl::find classes ${n}::*] {
-    if {[${m}::test_id $ID] != {}} { return [$m ${m}::#auto ${name} $chan $ID] }
+    if {[${m}::test_id $ID] != {}} { return [$m ${m}::#auto ${name} $chan $ID {*}$args] }
   }
   error "Do not know how to use device $name (id: $ID) as a $role"
 }
@@ -87,6 +89,7 @@ itcl::class device_role::base_interface {
   variable dev {}; ## Device handler (see Device library)
 
   # Drivers should provide constructor with "device" and "channel" parameters
+  # and optional option arguments.
   constructor {} {}
 
   method lock {} {Device2::lock $dev}
