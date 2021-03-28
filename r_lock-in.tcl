@@ -27,7 +27,7 @@ itcl::class interface {
   # Role-specific Tk widget.
   # It can be modified/replaced in drivers if needed.
 
-  variable root
+  variable root {}
   variable xy_i
   variable bar_w
   variable bar_h
@@ -70,7 +70,7 @@ itcl::class interface {
   }
 
   method update_interface {} {
-    if {![winfo exists $root.bar]} return
+    if {$root eq {} || ![winfo exists $root.bar]} return
 
     set w0 [expr $bar_w/2+1]
     set wx [expr int((1.0+$X/$M)*0.5*$bar_w)]
@@ -98,15 +98,17 @@ itcl::class TEST {
   proc test_id {id} {}
 
   constructor {d ch id args} {
+    set dev "TEST"
     set M 1
   }
   destructor {}
 
   ############################
   method get {} {
-    set x [expr rand()]
-    set y [expr rand()]
-    return [list $x $y]
+    set X [expr rand()]
+    set Y [expr rand()]
+    update_interface
+    return [list $X $Y]
   }
 }
 
