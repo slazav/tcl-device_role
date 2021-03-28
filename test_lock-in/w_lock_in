@@ -5,6 +5,10 @@ foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
 set dev1 [DeviceRole adc1 lock-in -single 1 -chan_x 1 -chan_y 2 -divider 5 -show_adc 1]
 #set dev1 [DeviceRole TEST ac_source]
 
+puts [$dev1 get]
+puts [$dev1 get_tconst]
+puts [$dev1 get_range]
+
 $dev1 make_widget .g\
  -title {Lock-in}\
 
@@ -18,5 +22,7 @@ proc meas {} {
   puts $r
   after 200 meas
 }
+
+
 
 meas

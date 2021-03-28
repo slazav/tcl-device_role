@@ -23,6 +23,9 @@ itcl::class interface {
   # methods which should be defined by driver:
   method get {} {}; # do the measurement, return two numbers, X and Y, Vrms
 
+  method get_tconst {} {return 0}; # Time constant, in seconds!
+  method get_range  {} {return M}; # Range in Vrms, same units as X,Y
+
   ##################
   # Role-specific Tk widget.
   # It can be modified/replaced in drivers if needed.
@@ -69,6 +72,7 @@ itcl::class interface {
     grid $root.status -columnspan 2 -padx 5 -pady 2 -sticky w
   }
 
+  # this should be called in the get command
   method update_interface {} {
     if {$root eq {} || ![winfo exists $root.bar]} return
 
@@ -110,6 +114,7 @@ itcl::class TEST {
     update_interface
     return [list $X $Y]
   }
+  method get_tconst {} {return 1}
 }
 
 
@@ -347,6 +352,25 @@ itcl::class femto_pico {
 
     # this is Vrms!
     return [list $X $Y]
+  }
+
+  method get_tconst {} {
+    if {$use_femto} {
+      set i [lsearch -exact $femto_tconsts $femto_tconst]
+      if {$i<0} {error "wrong Femto time constant: $femto_tconst"}
+      return [lindex $femto_tconsts_v $i]
+    }\
+    else {return 0}
+  }
+
+  method get_range {} {
+    set ret [expr $range/1e3]
+    if {$divider!=1} { set ret [expr $ret*$divider]}
+    if {$use_femto} {
+      set i [lsearch -exact $femto_ranges $femto_range]
+      if {$i<0} {error "wrong Femto range: $femto_range"}
+      set ret [expr $ret*[lindex $femto_ranges_v $i]/10.0]
+    }
   }
 
 }
