@@ -1,0 +1,23 @@
+#!/usr/bin/wish
+
+foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
+
+set dev1 [DeviceRole adc1 lock-in -single 1 -chan_x 1 -chan_y 2 -divider 5]
+#set dev1 [DeviceRole TEST ac_source]
+
+$dev1 make_widget .g\
+ -show_adc 1\
+ -title {Lock-in}\
+
+pack .g
+
+proc meas {} {
+  set v [$::dev1 get]
+  set x [lindex $v 0]
+  set y [lindex $v 1]
+  set r [expr "hypot($x,$y)"]
+  puts $r
+  after 200 meas
+}
+
+meas
