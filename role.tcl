@@ -22,6 +22,7 @@
 
 package require Itcl
 package require Device2
+package require xBlt; # parse_options
 
 namespace eval device_role {}
 
@@ -112,7 +113,6 @@ itcl::class device_role::base_interface {
 
 
   ########
-  # Return role- or device- specific Tk widget for controlling device.
-  # Return ampty string if not available.
-  method make_widget {name tkroot args} {}
+  # Make role- or device- specific Tk widget for controlling device.
+  method make_widget {tkroot args} {}
 }
