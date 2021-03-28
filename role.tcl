@@ -109,4 +109,10 @@ itcl::class device_role::base_interface {
 
   # Set configuration option
   method conf_set {name val} { error "unknown configuration option: $name" }
+
+
+  ########
+  # Return role- or device- specific Tk widget for controlling device.
+  # Return ampty string if not available.
+  method make_widget {name tkroot args} {}
 }
