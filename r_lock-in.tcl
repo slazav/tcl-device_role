@@ -83,7 +83,7 @@ itcl::class interface {
     $root.bar create rectangle $w0 [expr $bar_h/2+2] $wy $h1\
               -fill darkcyan -width 0 -tags data
     # Format values for the interface
-    set xy_i [format "X: %8.3e V, Y: %8.3e V" $X $Y]
+    set xy_i [format "%8.3e, %8.3e Vrms" $X $Y]
 
     $root.status configure -fg [expr {$status eq "OK"? "darkgreen":"red"}]
   }
@@ -157,6 +157,7 @@ itcl::class femto_pico {
       {-r -range}    range    2500\
       {-t -tconv}    tconv    60\
       {-d -divider}  divider  1\
+      {-show_adc}    show_adc 0\
       {-use_femto}      use_femto 1\
       {-femto_editable} femto_editable 0\
       {-femto_s1}       femto_s1 0\
@@ -259,11 +260,6 @@ itcl::class femto_pico {
   ############################
 
   method make_widget {tkroot args} {
-
-    # append additional options and run parent's make_widget:
-    lappend widget_options {*}[list\
-      {-show_adc} [itcl::scope show_adc] 0\
-    ]
     chain $tkroot {*}$args
 
     # Modify device label (include channels and divider):

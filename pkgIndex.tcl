@@ -15,6 +15,7 @@ lappend _files "$dir/r_dc_source.tcl"
 lappend _files "$dir/r_burst_source.tcl"
 lappend _files "$dir/r_power_supply.tcl"
 lappend _files "$dir/r_gauge.tcl"
+lappend _files "$dir/r_lock-in.tcl"
 lappend _files "$dir/r_dgen.tcl"
 
 set _pcmd {}
