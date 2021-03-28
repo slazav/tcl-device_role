@@ -125,11 +125,11 @@ itcl::class keysight {
     if {$phase ne {}} {set_phase $phase}
   }
 
-  method get_volt  {}  { return [$dev cmd "${sour_pref}VOLT?"] }
-  method get_freq  {} { return [$dev cmd "${sour_pref}FREQ?"] }
-  method get_offs  {} { return [$dev cmd "${sour_pref}VOLT:OFFS?"] }
-  method get_phase {} { return [$dev cmd "${sour_pref}PHAS?"] }
-  method get_out   {} { return [$dev cmd "OUTP${chan}?"] }
+  method get_volt  {}  { return [expr [$dev cmd "${sour_pref}VOLT?"]] }
+  method get_freq  {} { return [expr [$dev cmd "${sour_pref}FREQ?"]] }
+  method get_offs  {} { return [expr [$dev cmd "${sour_pref}VOLT:OFFS?"]] }
+  method get_phase {} { return [expr [$dev cmd "${sour_pref}PHAS?"]] }
+  method get_out   {} { return [expr [$dev cmd "OUTP${chan}?"]] }
 
   method set_volt {v}  { dev_set_par $dev "${sour_pref}VOLT" $v }
   method set_freq {v}  { dev_set_par $dev "${sour_pref}FREQ" $v }
