@@ -128,6 +128,7 @@ itcl::class TEST {
     set onoff 1
     set min_v 0
     set max_v 10
+    set out 1
   }
 
 }
