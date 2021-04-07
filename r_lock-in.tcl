@@ -121,9 +121,23 @@ itcl::class TEST {
 ######################################################################
 # Use Femto lock-in + PicoADC.
 #
-# Channels: <name>:<chan_x>,<chan_y>[:<s|d><range>]
-# Example: adc1:3,4:s2500
-
+# Usage:
+#   DeviceRole <name> lock-in [options]
+#
+# Options:
+#   -x -chan_x   -- X channel (default: 1)
+#   -x -chan_y   -- Y channel (default: 2)
+#   -s -single   -- single/differential mode (1|0, default: 1)
+#   -r -range    -- range (default: 2500)
+#   -t -tconv    -- conversion time (default: 60)
+#   -d -divider  -- divider (default: 1)
+#   -show_adc    -- Show ADC settings in the interface (0 or 1, default: 0)
+#   -use_femto      -- Use Femto locking (0 or 1, default: 1)
+#   -femto_editable -- Editable Femto parameters in the interface (0 or 1, default: 0)
+#   -femto_s1       -- Position of Femto S1 switch (0 or 1, default: 0)
+#   -femto_range    -- Position of Femto range switch (default: 4)
+#   -femto_tconst   -- Position of Femto tconst switch (default: 6)
+#
 itcl::class femto_pico {
   inherit interface
   proc test_id {id} {
