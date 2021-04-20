@@ -12,11 +12,19 @@
 #   use conf_* interface instead of configuring device through channels
 # - NaN/Inf return if overloaded
 #
-# `conf_*` interface should be used instead. Recommended parameter names:
-# autorange bool   -- enable autorange
-# range  {<list>}  -- set manual range
-# tconst {<list>}  -- set time constant
-# names  const     -- column names
+# conf interface:
+# - conf_list            -- get list of all configuration parameters
+# - conf_type $name      -- get type of a parameter (const, float, int, string, <list> or "")
+# - conf_get $name       -- get values of a parameter
+# - conf_set $name $val  -- set value of a parameter
+#
+# Recommended parameter names for conf_*` interface:
+# - autorange bool   -- enable/disable autorange
+# - range  {<list>}  -- set/get manual range (user-readable names should be used)
+# - tconst {<list>}  -- set time constant (user-readable names should be used)
+# - minv   const     -- minimum value (number or list for multi-column get command)
+# - maxv   const     -- maximum value (number or list for multi-column get command)
+# - names  const     -- column names
 
 
 package require Itcl
@@ -42,7 +50,9 @@ itcl::class interface {
 #  * <device>:(T|R)+  -- get a few numbers, T - time sweep, R - random
 #
 # Configuration parameters:
-#  * maxv         float        -- max value
+#  * range        {1 10 100 1k 10k}  -- range
+#  * minv         const
+#  * maxv         const
 #  * tsweep       int          -- time sweep length, s
 #  * tsweep_list  {5 10 15 20} -- time sweep length, s
 #  * names        const        -- column names
@@ -55,6 +65,7 @@ itcl::class TEST {
   variable chan;  # channel to use (R, RR, RRT, etc.)
   variable maxv 1;    # amplitude of the output value
   variable tsweep 10; # time sweep length, s
+  variable range 1;
 
   constructor {d ch id} {
     set chan $ch
@@ -82,17 +93,26 @@ itcl::class TEST {
 
   ############################
   method conf_list {} {
-    return [list {
-      maxv         float
-      tsweep       int
-      tsweep_list  {5 10 15 20}
-      names        const
-    }]
+    return [list { minv maxv range tsweep tsweep_list names }]
+  }
+
+  method conf_type {name} {
+    switch -exact -- $name {
+      maxv        { return const}
+      minv        { return const}
+      range       { return {1 10 100 1k 10k} }
+      tsweep      { return int}
+      tsweep_list { return {5 10 15 20}}
+      names       { return const}
+      default {return ""}
+    }
   }
 
   method conf_get {name} {
     switch -exact -- $name {
       maxv        { return $maxv}
+      minv        { return 0}
+      range       { return $range }
       tsweep      { return $tsweep}
       tsweep_list { return $tsweep}
       names       { return [split $chan {}] }
@@ -102,7 +122,17 @@ itcl::class TEST {
 
   method conf_set {name val} {
     switch -exact -- $name {
-      maxv        { set maxv $val}
+      range       {
+        set range $val
+        switch $range {
+          1   {set maxv 1}
+          10  {set maxv 10}
+          100 {set maxv 100}
+          1k  {set maxv 1000}
+          10k {set maxv 10000}
+          default {error "unknown range"}
+        }
+      }
       tsweep      { set tsweep $val}
       tsweep_list { set tsweep $val}
       default {error "unknown configuration name: $name"}
@@ -1124,16 +1154,16 @@ itcl::class leak_asm340 {
 }
 
 ######################################################################
-# EastTester ET4502 LCR meter
+# EastTester ET4502, ET1091 LCR meters
 #
-# I do not know how to set different modes,
-# I will always read two numbers from the screen.
-# TODO: conf
+# ZC,ET1091B        ,V1.01.2026.016,V1.12.2035.007,10762110001
 
 itcl::class lcr_et4502 {
   inherit interface
   proc test_id {id} {
-    if {[regexp {,ET4502} $id]} {return 1}
+    if {[regexp {,ET4502}  $id]} {return "ET4502"}
+    if {[regexp {,ET1091B} $id]} {return "ET1091B"}
+    return 0
   }
 
   constructor {d ch id} {

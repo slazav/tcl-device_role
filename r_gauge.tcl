@@ -1067,16 +1067,16 @@ itcl::class leak_asm340 {
 }
 
 ######################################################################
-# EastTester ET4502 LCR meter
+# EastTester ET4502, ET1091 LCR meters
 #
-# I do not know how to set different modes,
-# I will always read two numbers from the screen.
-# TODO: conf
+# ZC,ET1091B        ,V1.01.2026.016,V1.12.2035.007,10762110001
 
 itcl::class lcr_et4502 {
   inherit interface
   proc test_id {id} {
-    if {[regexp {,ET4502} $id]} {return 1}
+    if {[regexp {,ET4502}  $id]} {return "ET4502"}
+    if {[regexp {,ET1091B} $id]} {return "ET1091B"}
+    return 0
   }
 
   constructor {d ch id} {
