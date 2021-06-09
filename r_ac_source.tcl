@@ -24,6 +24,7 @@ itcl::class interface {
   public variable phase
   public variable out
 
+
   # methods which should be defined by driver:
 
   # Reconfigure output, set frequency, voltage, offset
@@ -46,6 +47,16 @@ itcl::class interface {
   method set_offs {v}  {set offs $v}
   method set_phase {v} {set phase $v}
   method set_out {v}   {set out [expr {$v?1:0}]}; # turn output on/off (without affecting other set/get commands)
+
+
+  # Non-zero AC shift. I use it to implement self-compensation
+  # when using with Femto lock-ins + input transformers. 
+  public variable ac_shift 0
+  method get_ac_shift {v}  {return $ac_shift}
+  method set_ac_shift {v}  {
+    set ac_shift $v
+    set volt  [get_volt]
+  }
 
   # update/apply interface values
   method on_apply {} {
@@ -72,7 +83,8 @@ itcl::class interface {
     set options [list \
       {-t -title}    title     {}\
       {-show_offs}   show_offs  0\
-      {-show_phase}  show_phase 0\
+      {-show_phase}     show_phase 0\
+      {-show_ac_shift}  show_ac_shift 0\
     ]
     xblt::parse_options "w_ac_source" $args $options
 
@@ -99,6 +111,12 @@ itcl::class interface {
       label $root.${n}_l -text $t
       entry $root.${n} -width 12 -textvariable [itcl::scope $n]
       grid $root.${n}_l $root.${n} -padx 5 -pady 2 -sticky e
+    }
+
+    if {$show_ac_shift} {
+      label $root.ac_shift_l -text "AC shift:"
+      label $root.ac_shift -width 12 -textvariable [itcl::scope ac_shift]
+      grid $root.ac_shift_l $root.ac_shift -padx 5 -pady 2 -sticky e
     }
 
     # Apply/Update buttons
@@ -163,13 +181,14 @@ itcl::class keysight {
 
   method set_ac {f v {o 0} {p {}}} {
     chain $f $v $o $p
-    dev_check $dev "${sour_pref}APPLY:SIN $f,$v,$o"
+    dev_check $dev "${sour_pref}APPLY:SIN $f,[expr $v+$ac_shift],$o"
     if {$p ne {}} {set_phase $p}
   }
 
   method get_volt {}  {
-    set volt [expr [$dev cmd "${sour_pref}VOLT?"]]
-    return $volt
+    set v [$dev cmd "${sour_pref}VOLT?"]
+    set volt [format %.3f [expr $v - $ac_shift]]
+    return [chain]
   }
   method get_freq {} {
     set freq [expr [$dev cmd "${sour_pref}FREQ?"]]
@@ -189,7 +208,8 @@ itcl::class keysight {
   }
 
   method set_volt {v} {
-    dev_set_par $dev "${sour_pref}VOLT" $v
+    chain $v
+    dev_set_par $dev "${sour_pref}VOLT" [expr $v+$ac_shift]
     get_volt
   }
   method set_freq {v} {

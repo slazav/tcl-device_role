@@ -9,6 +9,9 @@ $dev1 make_widget .g\
  -title {Generator}\
  -show_offs 1\
  -show_phase 0\
+ -show_ac_shift 1\
+
+$dev1 set_ac_shift 0.5
 
 pack .g
 
