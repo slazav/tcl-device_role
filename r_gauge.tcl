@@ -329,6 +329,7 @@ itcl::class sr844 {
   inherit interface
   proc test_id {id} {
     if {[regexp {,SR844,} $id]} {return 1}
+    return {}
   }
 
   variable chan;  # channel to use (1..2)
@@ -445,6 +446,7 @@ itcl::class sr830 {
   inherit interface
   proc test_id {id} {
     if {[regexp {,SR830,} $id]} {return 1}
+    return {}
   }
 
   variable chan;  # channel to use (1..2)
@@ -583,6 +585,7 @@ itcl::class picoscope {
   inherit interface
   proc test_id {id} {
     if {[regexp {pico_rec} $id]} {return 1}
+    return {}
   }
 
   variable osc_meas;  # measurement type: DC, lockin
@@ -874,6 +877,7 @@ itcl::class picoADC {
   inherit interface
   proc test_id {id} {
     if {[regexp {pico_adc} $id]} {return 1}
+    return {}
   }
 
   # Variables for multi-channel modes
@@ -1001,6 +1005,7 @@ itcl::class leak_ag_vs {
   inherit interface
   proc test_id {id} {
     if {$id == {Agilent VS leak detector}} {return 1}
+    return {}
   }
 
   variable chan;  # channel to use
@@ -1039,6 +1044,7 @@ itcl::class leak_asm340 {
   inherit interface
   proc test_id {id} {
     if {$id == {Adixen ASM340 leak detector}} {return 1}
+    return {}
   }
 
   variable chan;  # channel to use
@@ -1076,7 +1082,7 @@ itcl::class lcr_et4502 {
   proc test_id {id} {
     if {[regexp {,ET4502}  $id]} {return "ET4502"}
     if {[regexp {,ET1091B} $id]} {return "ET1091B"}
-    return 0
+    return {}
   }
 
   constructor {d ch id} {
@@ -1126,6 +1132,7 @@ itcl::class ah2500 {
   inherit interface
   proc test_id {id} {
     if {[regexp {^AH2500$} $id]} {return 1}
+    return {}
   }
 
   constructor {d ch id} {
