@@ -284,4 +284,7 @@ output pressure (mbar), input pressure (mbar)
 * Pfeiffer Adixen ASM340 leak detector. Returns two values:
 leak rate (mbar*l/s), input pressure (mbar).
 
+* Phoenix L300i leak detector. Returns two values:
+leak rate (mbar*l/s), input pressure (mbar).
+
 * TEST. Channels R<N>... for N random numbers, T<N> for N increasing values

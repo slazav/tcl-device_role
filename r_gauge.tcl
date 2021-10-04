@@ -1073,6 +1073,36 @@ itcl::class leak_asm340 {
 }
 
 ######################################################################
+# Phoenix l300i leak detector
+#
+
+itcl::class leak_l300 {
+  inherit interface
+  proc test_id {id} {
+    if {$id == {PhoeniXL300}} {return 1}
+    return {}
+  }
+
+  variable chan;  # channel to use
+
+  constructor {d ch id} {
+    # channels are not supported now
+    set valnames [list "Leak" "Pin"]
+    set dev $d
+  }
+
+  ############################
+  method get {} {
+    # inlet pressure, measurement (calibrated)
+    set pin   [$dev cmd "*meas:p1:mbar?"]
+    set leak  [$dev cmd "*read:mbar*l/s?"]
+    return [list $leak $pin]
+  }
+  method get_auto {} { return [get] }
+}
+
+
+######################################################################
 # EastTester ET4502, ET1091 LCR meters
 #
 # ZC,ET1091B        ,V1.01.2026.016,V1.12.2035.007,10762110001
