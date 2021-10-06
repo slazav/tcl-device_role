@@ -788,8 +788,11 @@ itcl::class picoscope {
         }
 
         # if amplitude is too small, try to decrease the range and repeat
-        if {[llength $ret] > 1} { set max [expr max([join $ret ,])]}\
-        else {set max $ret}
+        #  -- for DC $ret value can be negative
+        #  -- also max/min sometimes fail with only 1 arg
+        set max_pos [::tcl::mathfunc::max {*}$ret 0]
+        set min_neg [::tcl::mathfunc::min {*}$ret 0]
+        set max [expr max($max_pos, -$min_neg)]
         if {$auto == 1 && $justinc==0 && $max < [expr 0.5*$range]} {
           if {![catch {dec_range}]} continue
         }
@@ -1008,10 +1011,7 @@ itcl::class leak_ag_vs {
     return {}
   }
 
-  variable chan;  # channel to use
-
   constructor {d ch id} {
-    # channels are not supported now
     set valnames [list "Leak" "Pout" "Pin"]
     set dev $d
   }
@@ -1068,6 +1068,27 @@ itcl::class leak_asm340 {
     set pin   [conv_number [$dev cmd ?PE]]
     set leak  [conv_number [$dev cmd ?LE2]]
     return [list $leak $pin]
+  }
+  method get_auto {} { return [get] }
+}
+
+######################################################################
+# Use Pfeiffer HLT 2xx leak detector as a gauge.
+#
+itcl::class leak_pf {
+  inherit interface
+  proc test_id {id} {
+    if {[regexp {Pfeiffer HLT 2} $id]} {return 1}
+  }
+
+  constructor {d ch id} {
+    set dev $d
+  }
+
+  ############################
+  method get {} {
+    set ret [$dev cmd "leak?"]
+    return $ret
   }
   method get_auto {} { return [get] }
 }
