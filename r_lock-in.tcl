@@ -23,8 +23,13 @@ itcl::class interface {
   # methods which should be defined by driver:
   method get {} {}; # do the measurement, return two numbers, X and Y, Vrms
 
-  method get_tconst {} {return 0}; # Time constant, in seconds!
-  method get_range  {} {return M}; # Range in Vrms, same units as X,Y
+  method get_tconst {} {return 0};      # Time constant, in seconds!
+  method get_range  {} {return M};      # Range in Vrms, same units as X,Y
+
+  # Device status. For some devices $status variable is updated
+  # during get command. Use get_status after get to get correct status of
+  # the last operation.
+  method get_status {} {return $status}; # Device status (text)
 
   ##################
   # Role-specific Tk widget.
@@ -514,8 +519,8 @@ itcl::class sr830 {
     if {$status == {}} {lappend status "OK"}
     return $status
   }
-  
-} 
+
+}
 
 ######################################################################
 } # namespace
