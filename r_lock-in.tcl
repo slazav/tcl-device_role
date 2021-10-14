@@ -35,12 +35,14 @@ itcl::class interface {
   variable bar_w
   variable bar_h
 
+  # widget parameters
   variable widget_options [list\
       {-bar_w}       bar_w    200\
       {-bar_h}       bar_h    10\
       {-title}       title    {Lock-in:}
   ]
 
+  # creat widget
   method make_widget {tkroot args} {
     xblt::parse_options "lock-in widget" $args $widget_options
 
@@ -72,9 +74,14 @@ itcl::class interface {
     grid $root.status -columnspan 2 -padx 5 -pady 2 -sticky w
   }
 
+  # is the widget used?
+  method has_widget {} {
+    return [expr {$root ne {} && [winfo exists $root.bar]}]
+  }
+
   # this should be called in the get command
   method update_interface {} {
-    if {$root eq {} || ![winfo exists $root.bar]} return
+    if {![has_widget]} return
 
     set w0 [expr $bar_w/2+1]
     set wx [expr int((1.0+$X/$M)*0.5*$bar_w)]
