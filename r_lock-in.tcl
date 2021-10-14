@@ -22,9 +22,11 @@ itcl::class interface {
   ##################
   # methods which should be defined by driver:
   method get {} {}; # do the measurement, return two numbers, X and Y, Vrms
-
   method get_tconst {} {return 0};      # Time constant, in seconds!
   method get_range  {} {return M};      # Range in Vrms, same units as X,Y
+
+  method list_ranges  {} {return [get_range]}
+  method list_tconsts {} {return [get_tconst]}
 
   # Device status. For some devices $status variable is updated
   # during get command. Use get_status after get to get correct status of
@@ -294,6 +296,7 @@ itcl::class femto_pico {
 
   method make_widget {tkroot args} {
     chain $tkroot {*}$args
+    set root $tkroot
 
     # Modify device label (include channels and divider):
     if {$divider!=1} {set div_l ", divider 1:$divider"} else {set div_l ""}
@@ -417,7 +420,7 @@ itcl::class sr830 {
   variable T
 
   # lock-in ranges and time constants
-  common ranges
+  common ranges    {}
   common ranges_V  {2e-9 5e-9 1e-8 2e-8 5e-8 1e-7
                     2e-7 5e-7 1e-6 2e-6 5e-6 1e-5
                     2e-5 5e-5 1e-4 2e-4 5e-4 1e-3
@@ -430,18 +433,19 @@ itcl::class sr830 {
                     2e-7 5e-7 1e-6}
   common tconsts   {1e-5 3e-5 1e-4 3e-4 1e-3 3e-3 1e-2 3e-2
                     0.1 0.3 1.0 3.0 10.0 30.0 1e2 3e3 1e3 3e3 1e4 3e4}
-
-#  variable isrc
-#  common isrc_list {A A-B I(1M) I(100M)}
+  common imodes    {A A-B I(1M) I(100M)}
+  common imode      A
 
   constructor {d ch id args} {
     set dev $d
     get_range
+    get_imode
     get
   }
 
   method make_widget {tkroot args} {
     chain $tkroot {*}$args
+    set root $tkroot
 
     # Sensitivity combobox
     label $tkroot.range_l -text "Sensitivity, V:"
@@ -449,6 +453,7 @@ itcl::class sr830 {
       -textvariable [itcl::scope M]
     bind $tkroot.range <<ComboboxSelected>> "$this set_range"
     grid $tkroot.range_l $tkroot.range -padx 5 -pady 2 -sticky e
+    update_ranges
 
     # Time constant combobox
     label $tkroot.tconst_l -text "Time constant, s:"
@@ -456,6 +461,29 @@ itcl::class sr830 {
        -textvariable [itcl::scope T]
     bind $tkroot.tconst <<ComboboxSelected>> "$this set_tconst"
     grid $tkroot.tconst_l $tkroot.tconst -padx 5 -pady 2 -sticky e
+
+    # Input mode combobox
+    label $tkroot.imode_l -text "Input mode:"
+    ttk::combobox $tkroot.imode -width 9 -values $imodes\
+       -textvariable [itcl::scope imode]
+    bind $tkroot.imode <<ComboboxSelected>> "$this set_imode"
+    grid $tkroot.imode_l $tkroot.imode -padx 5 -pady 2 -sticky e
+  }
+
+  # Set ranges according with input mode (volts or amps)
+  # called in the constructor and in set_imode method.
+  method update_ranges {} {
+    set isrc [$dev cmd "ISRC?"]
+    if {$isrc == 0 || $isrc == 1} {
+      set ranges $ranges_V
+      set VA "V"
+    } else {
+      set ranges $ranges_A
+      set VA "A"
+    }
+    $root.range_l configure -text "Sensitivity, $VA:"
+    $root.range configure -values $ranges
+    get_range
   }
 
   ############################
@@ -468,20 +496,20 @@ itcl::class sr830 {
     return [list $X $Y]
   }
 
-#  ############################
-#  method list_ranges {} {
-#    if {$chan==1 || $chan==2} {return $aux_range}
-#    set isrc [$dev cmd "ISRC?"]
-#    if {$isrc == 0 || $isrc == 1} { set ranges $ranges_V } { set ranges $ranges_A }
-#    return $ranges
-#  }
-#  method list_tconsts {} {
-#    if {$chan==1 || $chan==2} {return $aux_tconst}
-#    return $tconsts
-#  }
+  ############################
+  method list_ranges {} {
+    return [list {*}$ranges]
+  }
+  method list_tconsts {} {
+    return [list {*}$tconsts]
+  }
+  method list_imodes {} {
+    return [list {*}$imodes]
+  }
 
   ############################
   method set_range  {{val {}}} {
+    set ranges [list_ranges]
     if {$val != {}} {set M $val}
     set n [lsearch -real -exact $ranges $M]
     if {$n<0} {error "unknown range setting: $M"}
@@ -493,11 +521,17 @@ itcl::class sr830 {
     if {$n<0} {error "unknown time constant setting: $T"}
     $dev cmd "OFLT $n"
   }
+  method set_imode {{val {}}} {
+    if {$val != {}} {set imode $val}
+    set n [lsearch -exact $imodes $imode]
+    if {$n<0} {error "unknown time constant setting: $imode"}
+    $dev cmd "ISRC $n"
+    update_ranges
+  }
 
   ############################
   method get_range  {} {
-    set isrc [$dev cmd "ISRC?"]
-    if {$isrc == 0 || $isrc == 1} { set ranges $ranges_V } { set ranges $ranges_A }
+    set ranges [list_ranges]
     set n [$dev cmd "SENS?"]
     set M [lindex $ranges $n]
     return $M
@@ -506,6 +540,11 @@ itcl::class sr830 {
     set n [$dev cmd "OFLT?"]
     set T [lindex $tconsts $n]
     return $T
+  }
+  method get_imode {} {
+    set n [$dev cmd "ISRC?"]
+    set imode [lindex $imodes $n]
+    return $imode
   }
 
   method get_status {} {
