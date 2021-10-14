@@ -326,21 +326,21 @@ itcl::class femto_pico {
 
       #label $root.femto_range_l -text "Range:"
       if {$femto_editable} {
+        # Femto tconst setting
+        ttk::combobox $root.femto_tconst -textvariable [itcl::scope femto_tconst]\
+          -values $femto_tconsts -state disabled
+
         # Femto range setting
         ttk::combobox $root.femto_range -textvariable [itcl::scope femto_range]\
           -values $femto_ranges
         grid $root.femto_range -columnspan 2 -padx 5 -pady 2 -sticky e
-
-        # Femto tconst setting
-        ttk::combobox $root.femto_tconst -textvariable [itcl::scope femto_tconst]\
-          -values $femto_tconsts -state disabled
       }\
       else {
-        label $root.femto_range -textvariable [itcl::scope femto_range]
         label $root.femto_tconst -textvariable [itcl::scope femto_tconst]
+        label $root.femto_range -textvariable [itcl::scope femto_range]
       }
-      grid $root.femto_range -columnspan 2 -padx 5 -pady 2 -sticky w
       grid $root.femto_tconst -columnspan 2 -padx 5 -pady 2 -sticky w
+      grid $root.femto_range -columnspan 2 -padx 5 -pady 2 -sticky w
     }
     # Transformer setting
   }
