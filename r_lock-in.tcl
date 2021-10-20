@@ -25,9 +25,6 @@ itcl::class interface {
   method get_tconst {} {return 0};      # Time constant, in seconds!
   method get_range  {} {return M};      # Range in Vrms, same units as X,Y
 
-  method list_ranges  {} {return [get_range]}
-  method list_tconsts {} {return [get_tconst]}
-
   # Device status. For some devices $status variable is updated
   # during get command. Use get_status after get to get correct status of
   # the last operation.
