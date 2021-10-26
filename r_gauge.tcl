@@ -253,7 +253,7 @@ itcl::class keithley_nanov {
 itcl::class keysight_mplex {
   inherit interface
   proc test_id {id} {
-    if {[regexp {,34972A,} $id]} {return {34972A}}
+    foreach n {34970A 34972A} {if {[regexp ",$n," $id]} {return $n}}
     return {}
   }
 
