@@ -137,7 +137,7 @@ itcl::class TEST {
 #
 # Options:
 #   -x -chan_x   -- X channel (default: 1)
-#   -x -chan_y   -- Y channel (default: 2)
+#   -y -chan_y   -- Y channel (default: 2)
 #   -s -single   -- single/differential mode (1|0, default: 1)
 #   -r -range    -- range (default: 2500)
 #   -t -tconv    -- conversion time (default: 60)
@@ -184,7 +184,7 @@ itcl::class femto_pico {
     # Parse options.
     set options [list \
       {-x -chan_x}   chan_x   1\
-      {-x -chan_y}   chan_y   2\
+      {-y -chan_y}   chan_y   2\
       {-s -single}   single   1\
       {-r -range}    range    2500\
       {-t -tconv}    tconv    60\
