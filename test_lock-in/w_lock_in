@@ -2,19 +2,20 @@
 
 foreach f [glob ../role.tcl ../d_*.tcl ../r_*.tcl] {source $f}
 
-set dev1 [DeviceRole adc1 lock-in -single 1 -chan_x 1 -chan_y 2 -divider 5 -show_adc 1]
+#set dev1 [DeviceRole adc1 lock-in -single 1 -chan_x 3 -chan_y 4 -divider 5 -show_adc 1]
+#set dev1 [DeviceRole adc1:3,4 lock-in -single 1 -divider 5 -show_adc 1]
+set dev1 [DeviceRole adc1 lock-in -single 1 -divider 5 -show_adc 1]
 #set dev1 [DeviceRole lockin1 lock-in]
 
 puts "get_tconst: [$dev1 get_tconst]"
 puts "get_range:  [$dev1 get_range]"
 puts "get_status: [$dev1 get_status]"
-puts "list_ranges:  [$dev1 list_ranges]"
-puts "list_tconsts: [$dev1 list_tconsts]"
+#puts "list_ranges:  [$dev1 list_ranges]"
+#puts "list_tconsts: [$dev1 list_tconsts]"
 #puts "get_imode: [$dev1 get_imode]"
 puts "get:        [$dev1 get]"
 
 $dev1 make_widget .g -title {Lock-in}
-
 pack .g
 
 proc meas {} {
