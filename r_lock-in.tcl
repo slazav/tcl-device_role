@@ -133,7 +133,7 @@ itcl::class TEST {
 # Use Femto lock-in + PicoADC.
 #
 # Usage:
-#   DeviceRole <name> lock-in [options]
+#   DeviceRole <name> lock-in[:<X>,<Y>] [options]
 #
 # Options:
 #   -x -chan_x   -- X channel (default: 1)
@@ -149,6 +149,9 @@ itcl::class TEST {
 #   -femto_range    -- Position of Femto range switch (default: 4)
 #   -femto_tconst   -- Position of Femto tconst switch (default: 6)
 #
+# If channel (:<X>,<Y> suffix) is not empty, it overrides X and Y channel numbers,
+# set by -x and -y perameters.
+
 itcl::class femto_pico {
   inherit interface
   proc test_id {id} {
@@ -197,6 +200,15 @@ itcl::class femto_pico {
       {-femto_tconst}   femto_tconst 6\
     ]
     xblt::parse_options "lock-in::femto_pico" $args $options
+
+    # If channel is not empty, it should contain channel numbers: <n1>,<n2>
+    # This overrides -x and -y settings.
+    if {$ch != {}} {
+      set xy [split $ch ","]
+      if {[llength $xy] != 2} { error "bad channel setting: $ch"}
+      set chan_x [lindex $xy 0]
+      set chan_y [lindex $xy 1]
+    }
 
     if {!$single && ($chan_x%2 != 1 || $chan_y%2 != 1)} {
       error "can't set differential mode for even-numbered channels: $chan_x,$chan_y"
