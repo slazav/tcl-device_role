@@ -645,6 +645,7 @@ itcl::class picoscope {
 
     # oscilloscope ranges
     set ranges [lindex [split [$dev cmd ranges A] "\n"] 0]
+    if {[llength $ranges]==1} {set ranges {*}$ranges}
     set range [get_range]
     if { $range == "undef" } {set range 1.0}
     set range_ref 10.0
@@ -718,6 +719,8 @@ itcl::class picoscope {
         set ret {}
         foreach {c1 c2} $osc_ch {
           set v [$dev cmd filter -f lockin -c $osc_nch($c1),$osc_nch($c2) $sigfile]
+          if {[llength $v] == 1} {set v [lindex $v 0]}
+
           set v [lindex [split $v "\n"] 0]
           if {$v == {}} {
             set f 0
@@ -818,6 +821,7 @@ itcl::class picoscope {
   method get_range {} {
     set c [lindex $osc_ch 0]
     set res [$dev cmd chan_get $c]
+    if {[llength $res] == 1} {set res [lindex $res 0]}
     set ch_cnf [lindex [split $res "\n"] 0]
     return [lindex $ch_cnf end]
   }
