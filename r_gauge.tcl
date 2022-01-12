@@ -1087,6 +1087,7 @@ itcl::class leak_asm340 {
 itcl::class leak_pf {
   inherit interface
   proc test_id {id} {
+    set id [string map {"\n" " "} $id]
     if {[regexp {Pfeiffer HLT 2} $id]} {return 1}
   }
 
