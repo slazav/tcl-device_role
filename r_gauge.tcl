@@ -900,7 +900,7 @@ itcl::class picoADC {
 
     # V3 Single-channel mode: device:1s
     # Here only channel number and single/differential mode is set.
-    # range and time constant is selected
+    # Range and conversion time is controlled with get_/set_tconst and get_/set_range.
     # This mode is sutable for using the device by multiple users:
     if {[regexp {^([0-9]+)([sd])$} $ch v0 chan vsd]} {
       set sngl [expr {"$vsd"=="s"? 1:0}]
@@ -1127,6 +1127,10 @@ itcl::class leak_l300 {
 # EastTester ET4502, ET1091 LCR meters
 #
 # ZC,ET1091B        ,V1.01.2026.016,V1.12.2035.007,10762110001
+#
+# Channels: <v1>-<v2>
+#  v1: R C L Z DCR ECAP
+#  v2: X D Q THR ESR
 
 itcl::class lcr_et4502 {
   inherit interface
@@ -1137,7 +1141,6 @@ itcl::class lcr_et4502 {
   }
 
   constructor {d ch id} {
-    # channels are not supported now
     set c [split $ch {-}]
     if {[llength $c] == 0} {
       set A "C"
