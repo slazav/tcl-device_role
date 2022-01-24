@@ -253,7 +253,7 @@ itcl::class keithley_nanov {
 itcl::class keysight_mplex {
   inherit interface
   proc test_id {id} {
-    if {[regexp {,34972A,} $id]} {return {34972A}}
+    foreach n {34970A 34972A} {if {[regexp ",$n," $id]} {return $n}}
     return {}
   }
 
@@ -645,6 +645,7 @@ itcl::class picoscope {
 
     # oscilloscope ranges
     set ranges [lindex [split [$dev cmd ranges A] "\n"] 0]
+    if {[llength $ranges]==1} {set ranges {*}$ranges}
     set range [get_range]
     if { $range == "undef" } {set range 1.0}
     set range_ref 10.0
@@ -718,6 +719,8 @@ itcl::class picoscope {
         set ret {}
         foreach {c1 c2} $osc_ch {
           set v [$dev cmd filter -f lockin -c $osc_nch($c1),$osc_nch($c2) $sigfile]
+          if {[llength $v] == 1} {set v [lindex $v 0]}
+
           set v [lindex [split $v "\n"] 0]
           if {$v == {}} {
             set f 0
@@ -818,6 +821,7 @@ itcl::class picoscope {
   method get_range {} {
     set c [lindex $osc_ch 0]
     set res [$dev cmd chan_get $c]
+    if {[llength $res] == 1} {set res [lindex $res 0]}
     set ch_cnf [lindex [split $res "\n"] 0]
     return [lindex $ch_cnf end]
   }
@@ -1007,6 +1011,7 @@ itcl::class picoADC {
 itcl::class leak_ag_vs {
   inherit interface
   proc test_id {id} {
+    set id [join [split $id "\n"] " "]
     if {$id == {Agilent VS leak detector}} {return 1}
     return {}
   }
@@ -1018,7 +1023,11 @@ itcl::class leak_ag_vs {
 
   ############################
   method get {} {
-    set ret [$dev cmd "?LP"]
+    set v "?LP"
+    set ret [$dev cmd $v]
+
+    # cut command name (1st word) from response if needed
+    if {[lindex {*}$ret 0] == $v} {set ret [lrange {*}$ret 1 end]}
 
     set leak [lindex $ret 0]
     set pout [lindex $ret 1]
@@ -1078,6 +1087,7 @@ itcl::class leak_asm340 {
 itcl::class leak_pf {
   inherit interface
   proc test_id {id} {
+    set id [string map {"\n" " "} $id]
     if {[regexp {Pfeiffer HLT 2} $id]} {return 1}
   }
 

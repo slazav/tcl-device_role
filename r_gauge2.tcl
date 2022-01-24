@@ -300,7 +300,7 @@ itcl::class keithley_nanov {
 itcl::class keysight_mplex {
   inherit interface
   proc test_id {id} {
-    if {[regexp {,34972A,} $id]} {return {34972A}}
+    foreach n {34970A 34972A} {if {[regexp ",$n," $id]} {return $n}}
     return {}
   }
 
@@ -1089,6 +1089,7 @@ itcl::class picoADC {
 itcl::class leak_ag_vs {
   inherit interface
   proc test_id {id} {
+    set id [join [split $id "\n"] " "]
     if {$id == {Agilent VS leak detector}} {return 1}
   }
 
@@ -1102,7 +1103,11 @@ itcl::class leak_ag_vs {
 
   ############################
   method get {} {
-    set ret [$dev cmd "?LP"]
+    set v "?LP"
+    set ret [$dev cmd $v]
+
+    # cut command name (1st word) from response if needed
+    if {[lindex {*}$ret 0] == $v} {set ret [lrange {*}$ret 1 end]}
 
     set leak [lindex $ret 0]
     set pout [lindex $ret 1]
