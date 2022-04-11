@@ -82,8 +82,6 @@ itcl::class interface {
     # Parse options.
     set options [list \
       {-t -title}    title     {}\
-      {-show_offs}   show_offs  0\
-      {-show_phase}     show_phase 0\
       {-show_ac_shift}  show_ac_shift 0\
     ]
     xblt::parse_options "w_ac_source" $args $options
@@ -96,33 +94,36 @@ itcl::class interface {
     checkbutton $root.out -text "Output ON"\
        -variable [itcl::scope out] -command "$this set_out $[itcl::scope out]"
     label $root.gen -text "Device: [get_device]"
-    grid $root.out $root.gen -padx 5 -pady 2 -sticky e
+    grid $root.out $root.gen -padx 5 -pady 2 -sticky w -columnspan 2
 
 
     # separator
     frame $root.sep -relief groove -borderwidth 1 -height 2
-    grid $root.sep -padx 5 -pady 1 -columnspan 2 -sticky ew
+    grid $root.sep -padx 5 -pady 1 -columnspan 4 -sticky ew
 
     # Frequency/amplitude/offset/phase entries
-    foreach n {freq volt offs phase}\
-            t {"Frequency, Hz:" "Voltage, Vpp:" "Offset, V" "Phase, deg:"}\
-            e [list 1 1 $show_offs $show_phase] {
-      if {!$e} continue
-      label $root.${n}_l -text $t
-      entry $root.${n} -width 12 -textvariable [itcl::scope $n]
-      grid $root.${n}_l $root.${n} -padx 5 -pady 2 -sticky e
-    }
+    label $root.freq_l -text "freq,Hz:"
+    entry $root.freq -width 10 -textvariable [itcl::scope freq]
+    label $root.volt_l -text "volt,Vpp:"
+    entry $root.volt -width 10 -textvariable [itcl::scope volt]
+    grid $root.freq_l $root.freq $root.volt_l $root.volt -padx 2 -pady 1 -sticky e
+
+    label $root.offs_l -text "offs,Vpp:"
+    entry $root.offs -width 10 -textvariable [itcl::scope offs]
+    label $root.phase_l -text "phase,d:"
+    entry $root.phase -width 10 -textvariable [itcl::scope phase]
+    grid $root.offs_l $root.offs $root.phase_l $root.phase -padx 2 -pady 1 -sticky e
 
     if {$show_ac_shift} {
       label $root.ac_shift_l -text "AC shift:"
       label $root.ac_shift -width 12 -textvariable [itcl::scope ac_shift]
-      grid $root.ac_shift_l $root.ac_shift -padx 5 -pady 2 -sticky e
+      grid $root.ac_shift_l $root.ac_shift -padx 2 -pady 1 -sticky e
     }
 
     # Apply/Update buttons
     button $root.abtn -text "Apply"  -command "$this on_apply"
     button $root.ubtn -text "Update" -command "$this on_update"
-    grid $root.abtn $root.ubtn -padx 3 -pady 3
+    grid $root.abtn $root.ubtn -padx 1 -pady 1 -columnspan 2
     on_update
   }
   ##############################################
