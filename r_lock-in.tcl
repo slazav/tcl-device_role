@@ -317,39 +317,40 @@ itcl::class femto_pico {
       ttk::combobox $root.range -width 9 -textvariable [itcl::scope range]\
         -values $ranges
       #bind $root.range <<ComboboxSelected>> "$this set_range"
-      grid $root.range_l $root.range -padx 5 -pady 2 -sticky e
+      grid $root.range_l $root.range -padx 2 -pady 1 -sticky e
 
       # Conversion time combobox
       label $root.tconv_l -text "ADC conv.time, s:"
       ttk::combobox $root.tconv -width 9 -textvariable [itcl::scope tconv]\
         -values $tconvs
       #bind $root.tconv <<ComboboxSelected>> "$this set_tconv"
-      grid $root.tconv_l $root.tconv -padx 5 -pady 2 -sticky e
+      grid $root.tconv_l $root.tconv -padx 2 -pady 1 -sticky e
     }
 
     #######
     if {$use_femto} {
       label $root.femto -text "Femto settings:" -font {-weight bold}
       label $root.femto_s1 -text "Switch1: [expr $femto_s1?{ON}:{OFF}]"
-      grid $root.femto $root.femto_s1 -padx 5 -pady 2 -sticky w
+      grid $root.femto $root.femto_s1 -padx 2 -pady 1 -sticky w
 
       #label $root.femto_range_l -text "Range:"
       if {$femto_editable} {
         # Femto tconst setting
         ttk::combobox $root.femto_tconst -textvariable [itcl::scope femto_tconst]\
-          -values $femto_tconsts -state disabled
+          -values $femto_tconsts
 
         # Femto range setting
         ttk::combobox $root.femto_range -textvariable [itcl::scope femto_range]\
           -values $femto_ranges
-        grid $root.femto_range -columnspan 2 -padx 5 -pady 2 -sticky e
+
+        grid $root.femto_tconst -columnspan 2 -padx 2 -pady 1 -sticky w
+        grid $root.femto_range  -columnspan 2 -padx 2 -pady 1 -sticky w
       }\
       else {
         label $root.femto_tconst -textvariable [itcl::scope femto_tconst]
         label $root.femto_range -textvariable [itcl::scope femto_range]
+        grid $root.femto_tconst $root.femto_range -padx 2 -pady 1 -sticky w
       }
-      grid $root.femto_tconst -columnspan 2 -padx 5 -pady 2 -sticky w
-      grid $root.femto_range -columnspan 2 -padx 5 -pady 2 -sticky w
     }
     # Transformer setting
   }
