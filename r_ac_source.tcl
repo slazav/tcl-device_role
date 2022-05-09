@@ -96,7 +96,6 @@ itcl::class interface {
     label $root.gen -text "Device: [get_device]"
     grid $root.out $root.gen -padx 5 -pady 2 -sticky w -columnspan 2
 
-
     # separator
     frame $root.sep -relief groove -borderwidth 1 -height 2
     grid $root.sep -padx 5 -pady 1 -columnspan 4 -sticky ew
@@ -188,8 +187,7 @@ itcl::class keysight {
 
   method get_volt {}  {
     set v [$dev cmd "${sour_pref}VOLT?"]
-    set volt [format %.3f [expr $v - $ac_shift]]
-    return [chain]
+    return [expr $v - $ac_shift]
   }
   method get_freq {} {
     set freq [expr [$dev cmd "${sour_pref}FREQ?"]]
@@ -210,6 +208,7 @@ itcl::class keysight {
 
   method set_volt {v} {
     chain $v
+    set volt [format %.3f $v]
     dev_set_par $dev "${sour_pref}VOLT" [expr $v+$ac_shift]
     get_volt
   }
