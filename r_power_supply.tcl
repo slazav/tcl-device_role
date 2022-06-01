@@ -37,6 +37,9 @@ itcl::class interface {
   # This function should not do any current jumps.
   method cc_reset {} {}
 
+  # same for CV mode
+  method cv_reset {} {}
+
   # get_stat -- get device status (short string to be shown in the interface).
   # Can have different values, depending on the device:
   #  CV  - constant voltage mode
@@ -130,6 +133,10 @@ itcl::class TEST {
 
   method cc_reset {} {
     set mode CC
+  }
+
+  method cv_reset {} {
+    set mode CV
   }
 
   method get_stat {} {
@@ -359,6 +366,11 @@ itcl::class keysight_n6700b {
     error "device is in strange state: [get_stat] ($oc:$qc)"
   }
 
+  # fixme
+  method cv_reset {} {
+  }
+
+
   method get_stat {} {
     # error states
     set n [$dev cmd "stat:ques:cond? (@$chan)"]
@@ -403,6 +415,7 @@ itcl::class tenma {
   method get_curr {} { tenma_ps::get_curr}
   method get_volt {} { tenma_ps::get_volt }
   method cc_reset {} { tenma_ps::cc_reset }
+  method cv_reset {} { tenma_ps::cv_reset }
   method get_stat {} { tenma_ps::get_stat }
 }
 
