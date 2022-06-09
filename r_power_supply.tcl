@@ -40,6 +40,9 @@ itcl::class interface {
   # same for CV mode
   method cv_reset {} {}
 
+  # turn output off
+  method off {} {}
+
   # get_stat -- get device status (short string to be shown in the interface).
   # Can have different values, depending on the device:
   #  CV  - constant voltage mode
@@ -137,6 +140,12 @@ itcl::class TEST {
 
   method cv_reset {} {
     set mode CV
+  }
+
+  method off {} {
+    set mode OFF
+    set I 0
+    set V 0
   }
 
   method get_stat {} {
@@ -368,8 +377,12 @@ itcl::class keysight_n6700b {
 
   # fixme
   method cv_reset {} {
+    puts stderr "FIXME: cv_reset method is not supported for this DeviceRole driver"
   }
 
+  method off {} {
+    puts stderr "FIXME: off method is not supported for this DeviceRole driver"
+  }
 
   method get_stat {} {
     # error states
@@ -416,6 +429,7 @@ itcl::class tenma {
   method get_volt {} { tenma_ps::get_volt }
   method cc_reset {} { tenma_ps::cc_reset }
   method cv_reset {} { tenma_ps::cv_reset }
+  method off {}      { tenma_ps::off }
   method get_stat {} { tenma_ps::get_stat }
 }
 

@@ -88,12 +88,18 @@ itcl::class tenma_ps {
   }
 
   method cv_reset {} {
-    ## set voltage to actual current, turn output on
+    ## set voltage to actual value, turn output on
     set c [$dev cmd "VOUT1?"]
     $dev cmd "VSET1:$c"
     $dev cmd "BEEP1"; # beep off
     $dev cmd "OUT1"
   }
+
+  method off {} {
+    # turn output off
+    $dev cmd "OUT0"
+  }
+
 
 ##
 # Status bits (from documentation):
