@@ -641,15 +641,20 @@ itcl::class siglent {
   method on  {} { $dev cmd "OUTP CH$chan,ON" }
   method off {} { $dev cmd "OUTP CH$chan,OFF" }
 
-  ## set current to actual current, turn output on
+  ## Set current to actual current, turn output on.
+  ## For Siglent devices switching from V0-OFF to 0-ON
+  ## will produce peak to V0 and then to zero.
+  ## 1s delay is added to avoid this effect
   method cc_reset {} {
     set_curr [get_curr]
+    after 1000
     on
   }
 
   ## set voltage to actual value, turn output on
   method cv_reset {} {
     set_volt [get_volt]
+    after 1000
     on
   }
 
