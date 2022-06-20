@@ -412,7 +412,7 @@ itcl::class keysight_n6700b {
 }
 
 ######################################################################
-# Use Korad/Velleman/Tenma device in a power_suply role.
+# Use Korad/Velleman/Tenma (see d_tenma_ps.tcl)
 itcl::class tenma {
   inherit tenma_ps interface
   proc test_id {id} {tenma_ps::test_id $id}
@@ -432,6 +432,29 @@ itcl::class tenma {
   method off {}      { tenma_ps::off }
   method get_stat {} { tenma_ps::get_stat }
 }
+
+######################################################################
+# Use Siglent SPD 1168X/1305X/3303C (see d_siglent_ps.tcl)
+itcl::class siglent {
+  inherit siglent_ps interface
+  proc test_id {id} {siglent_ps::test_id $id}
+  # we use Device from siglent_ps class
+  method get_device {} {return $siglent_ps::dev}
+
+  constructor {d ch id} {siglent_ps::constructor $d $ch $id} {}
+
+  method set_volt {val} { siglent_ps::set_volt $val}
+  method set_curr {val} { siglent_ps::set_curr $val}
+  method set_ovp  {val} { };  # no OVP!
+  method set_ocp  {val} { };  # no OVP!
+  method get_curr {} { siglent_ps::get_curr}
+  method get_volt {} { siglent_ps::get_volt }
+  method cc_reset {} { siglent_ps::cc_reset }
+  method cv_reset {} { siglent_ps::cv_reset }
+  method off {}      { siglent_ps::off }
+  method get_stat {} { siglent_ps::get_stat }
+}
+
 
 ######################################################################
 } # namespace
