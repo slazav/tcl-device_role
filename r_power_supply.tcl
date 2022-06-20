@@ -412,49 +412,277 @@ itcl::class keysight_n6700b {
 }
 
 ######################################################################
-# Use Korad/Velleman/Tenma (see d_tenma_ps.tcl)
+## Korad/Velleman/Tenma power supplies
+
+# See:
+# https://sigrok.org/wiki/Korad_KAxxxxP_series
+# https://sigrok.org/gitweb/?p=libsigrok.git (src/hardware /korad-kaxxxxp/)
+#
+# There are many devices with different id strings and limits
+#   KORADKA6003PV2.0    tenma 2550 60V 3A
+#   TENMA72-2540V2.0    tenma 2540 30V 5A
+#   TENMA 72-2540 V2.1  tenma 2540 30V 5A
+# No channels are supported
+
 itcl::class tenma {
-  inherit tenma_ps interface
-  proc test_id {id} {tenma_ps::test_id $id}
-  # we use Device from tenma_ps class
-  method get_device {} {return $tenma_ps::dev}
+  inherit interface
+  protected variable dev;
+  protected variable model;
+  public variable min_i;
+  public variable min_v;
+  public variable max_i;
+  public variable max_v;
+  public variable min_i_step 0.001;
+  public variable min_v_step 0.01;
+  public variable i_prec 0.01;
 
-  constructor {d ch id} {tenma_ps::constructor $d $ch $id} {}
+  # redefine lock/unlock methods with our dev
+  method lock {} {$dev lock}
+  method unlock {} {$dev unlock}
 
-  method set_volt {val} { tenma_ps::set_volt $val}
-  method set_curr {val} { tenma_ps::set_curr $val}
-  method set_ovp  {val} { tenma_ps::set_ovp $val}
-  method set_ocp  {val} { tenma_ps::set_ocp $val}
-  method get_curr {} { tenma_ps::get_curr}
-  method get_volt {} { tenma_ps::get_volt }
-  method cc_reset {} { tenma_ps::cc_reset }
-  method cv_reset {} { tenma_ps::cv_reset }
-  method off {}      { tenma_ps::off }
-  method get_stat {} { tenma_ps::get_stat }
+  proc test_id {id} {
+    if {[regexp {KORADKA6003PV2.0} $id]}   {return {72-2550}}; # Tenma 72-2550
+    if {[regexp {TENMA72-2550V2.0} $id]}   {return {72-2550}}; # Tenma 72-2550
+    if {[regexp {TENMA72-2540V2.0} $id]}   {return {72-2540}}; # Tenma 72-2540
+    if {[regexp {TENMA 72-2540 V2.1} $id]} {return {72-2540}}; # Tenma 72-2540
+    if {[regexp {TENMA 72-2535 V2.1} $id]} {return {72-2535}}; # Tenma 72-2535
+    # from https://sigrok.org
+    if {[regexp {VELLEMANPS3005DV2.0}    $id]} {return {72-2550}}; # Velleman PS3005D
+    if {[regexp {VELLEMANLABPS3005DV2.0} $id]} {return {72-2550}}; # Velleman LABPS3005D
+    if {[regexp {KORADKA3005PV2.0}       $id]} {return {72-2550}}; # Korad KA3005P
+    if {[regexp {KORAD KD3005P V2.0}     $id]} {return {72-2550}}; # Korad KA3005P
+    if {[regexp {KORADKD3005PV2.0}       $id]} {return {72-2550}}; # Korad KA3005P
+    if {[regexp {RND 320-KA3005P V2.0}   $id]} {return {72-2550}}; # RND KA3005P
+    if {[regexp {S-LS-31 V2.0}           $id]} {return {72-2550}}; # Stamos Soldering S-LS-31
+  }
+
+  constructor {d ch id} {
+    if {$ch!={}} {error "channels are not supported for the device $d"}
+    set model [test_id $id]
+    switch -exact -- $model {
+      72-2550 { set max_i 3.09; set max_v 60.0 }
+      72-2540 { set max_i 5.09; set max_v 31.0 }
+      72-2535 { set max_i 3.09; set max_v 31.0 }
+      default { error "tenma_ps: unknown model: $model" }
+    }
+    set dev $d
+    set min_i 0.0
+    set min_v 0.0
+    set min_i_step 0.001
+    set min_v_step 0.01
+    set i_prec 0.02
+  }
+
+  method set_volt {val} {
+    set val [expr {round($val*100)/100.0}]
+    $dev cmd "VSET1:$val"
+  }
+  method set_curr {val} {
+    set val [expr {round($val*1000)/1000.0}]
+    $dev cmd "ISET1:$val"
+  }
+  method set_ovp  {val} {
+    set_volt $val
+    $dev cmd "OVP1"
+  }
+  method set_ocp  {val} {
+    set_curr $val
+    $dev cmd "OCP1"
+  }
+  method get_curr {} { return [$dev cmd "IOUT1?"] }
+  method get_volt {} { return [$dev cmd "VOUT1?"] }
+
+  method cc_reset {} {
+    ## set current to actual current, turn output on
+    set c [$dev cmd "IOUT1?"]
+    $dev cmd "ISET1:$c"
+    $dev cmd "BEEP1"; # beep off
+    $dev cmd "OUT1"
+  }
+
+  method cv_reset {} {
+    ## set voltage to actual value, turn output on
+    set c [$dev cmd "VOUT1?"]
+    $dev cmd "VSET1:$c"
+    $dev cmd "BEEP1"; # beep off
+    $dev cmd "OUT1"
+  }
+
+  method off {} {
+    # turn output off
+    $dev cmd "OUT0"
+  }
+
+  method on {} {
+    # turn output on
+    $dev cmd "OUT1"
+  }
+
+  ##
+  # Status bits (from documentation):
+  #  0 - CH1:      1/0 - voltage/current
+  #  1 - CH2:      1/0 - voltage/current ??
+  #  2 - Tracking: 1/0 - parallel/series ??
+  #  3 - Device:   1/0 - tracking/independent ??
+  #  4 - Device:   1/0 - beeping/silent ??
+  #  5 - Buttons:  1/0 - locked/unlocked ??
+  #  6 - output:   1/0 - enabled/disabled
+  #  7 - ? (usually 0)
+  #
+  # Status bits test on real devices:
+  # pst1 TENMA72-2550V2.0
+  # pst2 TENMA 72-2535 V2.1
+  # pst5 TENMA 72-2540 V2.1
+  #
+  #                     pst1 pst2 pst5
+  # ==================================
+  # CC ON      01010000  80  80  80
+  # CC OFF     00010000  16  16  16
+  # CV ON      01010001  81  81  81
+  # CV OFF     00010001  17  17  17
+  # CC ON OVP  11010000 208 208 208
+  # CC OFF OVP 10010000 144 144 144
+  # CV ON OVP  11010001 209 209 209
+  # CV OFF OVP 10010001 145 145 145
+  # OVP trig   10010001 145 145 145
+
+  method get_stat {} {
+    set n [$dev cmd "STATUS?"]
+    binary scan $n c nv;          # convert char -> 8-bit integer
+    set nv [expr { $nv & 0xFF }]; # convert to unsigned
+    if {($nv&(1<<6)) == 0} {return "OFF"}
+    if {($nv&1) == 1} {return "CV"}
+    return "CC"
+  }
+
 }
 
 ######################################################################
-# Use Siglent SPD 1168X/1305X/3303C (see d_siglent_ps.tcl)
+## Siglent SPD 1168X/1305X/3303C power supplies
+
+# ID strings:
+#   Siglent Technologies,SPD1168X,SPD13DCC6R0348,2.1.1.9,V1.0
+#   Siglent Technologies,SPD3303C,SPD3EEDC6R0113,1.02.01.01.03R9,V1.3
+#
+# SPD1168X - 1channel, LAN/USB, 16V/8A
+# SPD1305X - 1channel, LAN/USB, 30V/5A, not tested
+# SPD3303C - 3channels, USB only, 32V/3.2A, 32V/3.2A, fixed
+#
 itcl::class siglent {
-  inherit siglent_ps interface
-  proc test_id {id} {siglent_ps::test_id $id}
-  # we use Device from siglent_ps class
-  method get_device {} {return $siglent_ps::dev}
+  inherit interface
+  # redefine lock/unlock methods with our dev
+  method lock {} {$dev lock}
+  method unlock {} {$dev unlock}
 
-  constructor {d ch id} {siglent_ps::constructor $d $ch $id} {}
+  proc test_id {id} {
+    if {[regexp {,SPD1168X,} $id]} {return {SPD1168X}}
+    if {[regexp {,SPD1305X,} $id]} {return {SPD1305X}}
+    if {[regexp {,SPD3303C,} $id]} {return {SPD3303C}}
+    error "Unknown id: $id"
+  }
 
-  method set_volt {val} { siglent_ps::set_volt $val}
-  method set_curr {val} { siglent_ps::set_curr $val}
-  method set_ovp  {val} { };  # no OVP!
-  method set_ocp  {val} { };  # no OVP!
-  method get_curr {} { siglent_ps::get_curr}
-  method get_volt {} { siglent_ps::get_volt }
-  method cc_reset {} { siglent_ps::cc_reset }
-  method cv_reset {} { siglent_ps::cv_reset }
-  method off {}      { siglent_ps::off }
-  method get_stat {} { siglent_ps::get_stat }
+  protected variable dev;
+  protected variable chan;
+  protected variable model;
+
+  public variable min_i;
+  public variable min_v;
+  public variable max_i;
+  public variable max_v;
+  public variable min_i_step;
+  public variable min_v_step;
+  public variable i_prec 0.01;
+
+  constructor {d ch id} {
+    set dev $d
+    set model [test_id $id]
+    set min_i 0
+    set min_v 0
+    set chan 1
+    if {$model eq {SPD1168X}} {
+      set max_i 8
+      set max_v 16
+      set min_v_step 0.001
+      set min_i_step 0.001
+      if {$ch ne {}} {
+        error "$this: bad channel setting: $ch"
+        return
+      }
+    }\
+    elseif {$model eq {SPD1305X}} {
+      set max_i 5
+      set max_v 30
+      set min_v_step 0.001
+      set min_i_step 0.001
+      if {$ch ne {}} {
+        error "$this: bad channel setting: $ch"
+        return
+      }
+    }\
+    elseif {$model eq {SPD3303C}} {
+      set max_i 3.2
+      set max_v 32
+      set min_v_step 0.01
+      set min_i_step 0.01
+      if {$ch !=1 && $ch!=2} {
+        error "$this: bad channel setting: $ch"
+        return
+      }
+      set chan $ch
+    }\
+    else {error "Unknown model: $model"}
+
+  }
+
+  method set_volt {val} { $dev cmd "CH$chan:VOLT $val" }
+  method set_curr {val} { $dev cmd "CH$chan:CURR $val" }
+  method get_volt {} { $dev cmd "MEAS:VOLT? CH$chan" }
+  method get_curr {} { $dev cmd "MEAS:CURR? CH$chan" }
+  method on  {} { $dev cmd "OUTP CH$chan,ON" }
+  method off {} { $dev cmd "OUTP CH$chan,OFF" }
+
+  ## set current to actual current, turn output on
+  method cc_reset {} {
+    set_curr [get_curr]
+    on
+  }
+
+  ## set voltage to actual value, turn output on
+  method cv_reset {} {
+    set_volt [get_volt]
+    on
+  }
+
+  ##
+  # Status bits (from documentation):
+  # SDG1000X
+  # 0    0: CV mode           1: CC mode
+  # 4    0: Output OFF        1: Output ON
+  # 5    0: 2W mode           1: 4W mode
+  # 6    0: TIMER OFF         1: TIMER ON
+  # 8    0: digital display;  1: waveform display
+  #
+  # SDG3303X
+  # 0    0: CH1 CV mode       1: CH1 CC mode
+  # 1    0: CH2 CV mode       1: CH2 CC mode
+  # 2,3  01: Independent mode
+  #      10: Parallel mode
+  #      11: Series mode
+  # 4    0: CH1 OFF      1: CH1 ON
+  # 5    0: CH2 OFF      1: CH2 ON
+  method get_stat {} {
+    # status bits
+    set ccbit [expr $chan-1]
+    set onbit [expr $chan+3]
+    # get status from the device
+    set n [$dev cmd "SYST:STAT?"]
+    scan $n 0x%x n;  # hex->num
+    set n [expr { $n & 0xFFFF }]; # convert to unsigned
+    if {($n&(1<<$onbit)) == 0} {return "OFF"}
+    if {($n&(1<<$ccbit)) == 0} {return "CV"}
+    return "CC"
+  }
 }
-
 
 ######################################################################
 } # namespace

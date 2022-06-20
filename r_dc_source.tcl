@@ -243,44 +243,46 @@ itcl::class sr844 {
 ######################################################################
 # Use Korad/Velleman/Tenma device in a voltage_suply (see d_tenma_ps.tcl)
 itcl::class tenma {
-  inherit tenma_ps interface
-  proc test_id {id} {tenma_ps::test_id $id}
-  # we use Device from tenma_ps class
-  method get_device {} {return $tenma_ps::dev}
+  variable base ::device_role::power_supply::tenma
+  inherit ::device_role::power_supply::tenma
+  proc test_id {id} {::device_role::power_supply::tenma::test_id $id}
+  # we use Device from $base class
+  method get_device {} {return ${base}::dev}
 
-  constructor {d ch id} {tenma_ps::constructor $d $ch $id} {
+  constructor {d ch id} {${base}::constructor $d $ch $id} {
     # set max current
-    tenma_ps::set_curr $max_i
+    ${base}::set_curr $max_i
     $dev cmd "OVP0";  # clear OVP/OCP
     $dev cmd "OCP0";  #
     $dev cmd "BEEP1"; # beep off
   }
   method set_volt {val} {
-    tenma_ps::set_volt $val
-    if {[tenma_ps::get_stat] == {OFF}} { tenma_ps::on }
+    ${base}::set_volt $val
+    if {[${base}::get_stat] == {OFF}} { ${base}::on }
   }
-  method off {} { tenma_ps::off }
-  method get_volt {} { tenma_ps::get_volt }
+  method off {} { ${base}::off }
+  method get_volt {} { ${base}::get_volt }
 }
 
 ######################################################################
 # Use Siglent SPD 1168X/1305X/3303C as a DC source (see d_siglent_ps.tcl)
 itcl::class siglent {
-  inherit siglent_ps interface
-  proc test_id {id} {siglent_ps::test_id $id}
-  # we use Device from siglent_ps class
-  method get_device {} {return $siglent_ps::dev}
+  variable base ::device_role::power_supply::siglent
+  inherit ::device_role::power_supply::siglent
+  proc test_id {id} {::device_role::power_supply::siglent::test_id $id}
+  # we use Device from $base class
+  method get_device {} {return ${base}::dev}
 
-  constructor {d ch id} {siglent_ps::constructor $d $ch $id} {
+  constructor {d ch id} {${base}::constructor $d $ch $id} {
     # set max current
-    siglent_ps::set_curr $max_i
+    ${base}::set_curr $max_i
   }
   method set_volt {val} {
-    siglent_ps::set_volt $val
-    if {[siglent_ps::get_stat] == {OFF}} { siglent_ps::on }
+    ${base}::set_volt $val
+    if {[${base}::get_stat] == {OFF}} { ${base}::on }
   }
-  method off {} { siglent_ps::off }
-  method get_volt {} { siglent_ps::get_volt }
+  method off {} { ${base}::off }
+  method get_volt {} { ${base}::get_volt }
 }
 
 
