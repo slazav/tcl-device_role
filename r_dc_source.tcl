@@ -241,7 +241,7 @@ itcl::class sr844 {
 }
 
 ######################################################################
-# Use Korad/Velleman/Tenma device in a voltage_suply.
+# Use Korad/Velleman/Tenma device in a voltage_suply (see d_tenma_ps.tcl)
 itcl::class tenma {
   inherit tenma_ps interface
   proc test_id {id} {tenma_ps::test_id $id}
@@ -257,13 +257,32 @@ itcl::class tenma {
   }
   method set_volt {val} {
     tenma_ps::set_volt $val
-    if {[tenma_ps::get_stat] == {OFF}} { $dev cmd "OUT1" }
+    if {[tenma_ps::get_stat] == {OFF}} { tenma_ps::on }
   }
-  method off {} {
-    $dev cmd "OUT0"
-  }
+  method off {} { tenma_ps::off }
   method get_volt {} { tenma_ps::get_volt }
 }
+
+######################################################################
+# Use Siglent SPD 1168X/1305X/3303C as a DC source (see d_siglent_ps.tcl)
+itcl::class siglent {
+  inherit siglent_ps interface
+  proc test_id {id} {siglent_ps::test_id $id}
+  # we use Device from siglent_ps class
+  method get_device {} {return $siglent_ps::dev}
+
+  constructor {d ch id} {siglent_ps::constructor $d $ch $id} {
+    # set max current
+    siglent_ps::set_curr $max_i
+  }
+  method set_volt {val} {
+    siglent_ps::set_volt $val
+    if {[siglent_ps::get_stat] == {OFF}} { siglent_ps::on }
+  }
+  method off {} { siglent_ps::off }
+  method get_volt {} { siglent_ps::get_volt }
+}
+
 
 ######################################################################
 # Use Keithley SorceMeter device as a dc source.
