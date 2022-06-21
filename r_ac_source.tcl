@@ -240,4 +240,110 @@ itcl::class keysight {
 }
 
 ######################################################################
+# Use Siglent SDG 2-channel generators as an ac_source.
+#
+# Siglent Technologies,SDG1032X,SDG1XDCC6R1389,1.01.01.33R1B10
+#
+itcl::class siglent {
+  inherit interface
+  proc test_id {id} {
+    if {[regexp {,SDG1032X,} $id]} {return {SDG1032X}}
+    if {[regexp {,SDG1062X,} $id]} {return {SDG1062X}}; # not tested
+  }
+
+  variable chan
+  constructor {d ch id args} {
+    set dev $d
+    set max_v 20
+    set min_v 0.002
+    if {$ch=={}} { error "empty channel (use :1 or :2)" }
+    if {$ch!=1 && $ch!=2} { error "unsupported channel: $ch" }
+    set chan $ch
+
+    # basic sine output, HiZ
+    $dev cmd "C${chan}:BSWV WVTP,SINE"
+    $dev cmd "C${chan}:MDWV STATE,OFF"
+    $dev cmd "C${chan}:SWWV STATE,OFF"
+    $dev cmd "C${chan}:BTWV STATE,OFF"
+    $dev cmd "C${chan}:ARWV STATE,OFF"
+    $dev cmd "C${chan}:HARM HARMSTATE,OFF"
+    $dev cmd "C${chan}:CMBN OFF"
+    $dev cmd "C${chan}:INVT OFF"
+    $dev cmd "C${chan}:OUTP LOAD,HZ"
+    $dev cmd "C${chan}:OUTP PLRT,NOR"
+  }
+
+
+  # get_* methods do NOT update interface.
+  # If they are called regularly, it should not
+  # prevent user from typing new values in the interface.
+  method get_volt {}  {
+    set l [$dev cmd "C${chan}:BSWV?"]
+    regexp {,AMP,([0-9\.]+)V,} $l tmp v
+    if {$ac_shift != 0} {set v [expr $v-$ac_shift]}
+    return $v
+  }
+  method get_freq {} {
+    set l [$dev cmd "C${chan}:BSWV?"]
+    regexp {,FRQ,([0-9\.]+)HZ,} $l tmp v
+    return $v
+  }
+  method get_offs {} {
+    set l [$dev cmd "C${chan}:BSWV?"]
+    regexp {,OFST,([0-9\.]+)V,} $l tmp v
+    return $v
+  }
+  method get_phase {} {
+    set l [$dev cmd "C${chan}:BSWV?"]
+    regexp {,PHSE,([0-9\.]+)} $l tmp v
+    return $v
+  }
+  method get_out {} {
+    set l [$dev cmd "C${chan}:OUTP?"]
+    regexp {OUTP (ON|OFF),} $l tmp v
+    return [expr {$v eq {ON}}]
+  }
+
+
+  method set_ac {f v {o 0} {p {}}} {
+    chain $f $v $o $p; # call method from base class to update interface
+    if {$ac_shift != 0} {set v [expr $v+$ac_shift]}
+    $dev cmd "C${chan}:BSWV FRQ,$f"
+    $dev cmd "C${chan}:BSWV AMP,$v"
+    $dev cmd "C${chan}:BSWV OFST,$o"
+    if {$p ne {}} {
+      set phse [expr $p-int($p/360.0)*360]
+      $dev cmd "C${chan}:BSWV PHSE,$phse"
+    }
+  }
+  method set_volt {v} {
+    chain $v
+    if {$ac_shift != 0} {set v [expr $v+$ac_shift]}
+    $dev cmd "C${chan}:BSWV AMP,$v"
+  }
+  method set_freq {v} {
+    chain $v
+    $dev cmd "C${chan}:BSWV FRQ,$v"
+  }
+  method set_offs {v}  {
+    chain $v
+    $dev cmd "C${chan}:BSWV OFST,$v"
+  }
+  method set_phase {v} {
+    chain $v
+    set v [expr $v-int($v/360.0)*360]
+    $dev cmd "C${chan}:BSWV PHSE,$v"
+  }
+  method set_out {v} {
+  # switch to burst mode to reduce signal leakage?
+    chain $v
+    $dev cmd "C${chan}:OUTP [expr {$v?{ON}:{OFF}}]"
+  }
+
+  method set_sync {state} {
+    $dev cmd "C${chan}:SYNC [expr {$v?{ON}:{OFF}}]"
+  }
+}
+
+######################################################################
 } # namespace
