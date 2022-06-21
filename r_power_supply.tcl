@@ -578,7 +578,6 @@ itcl::class siglent {
     if {[regexp {,SPD1168X,} $id]} {return {SPD1168X}}
     if {[regexp {,SPD1305X,} $id]} {return {SPD1305X}}
     if {[regexp {,SPD3303C,} $id]} {return {SPD3303C}}
-    error "Unknown id: $id"
   }
 
   protected variable dev;
