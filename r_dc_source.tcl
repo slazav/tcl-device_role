@@ -77,6 +77,55 @@ itcl::class keysight {
     return [$dev cmd "${sour_pref}VOLT:OFFS? "]
   }
 }
+
+######################################################################
+# Use Siglent SDG 2-channel generators as a DC source.
+itcl::class siglent_gen {
+  inherit interface
+  proc test_id {id} {
+    if {[regexp {,SDG1032X,} $id]} {return {SDG1032X}}
+    if {[regexp {,SDG1062X,} $id]} {return {SDG1062X}}; # not tested
+  }
+  variable chan
+  constructor {d ch id} {
+    set dev $d
+    set max_v 20
+    set min_v -20
+    if {$ch=={}} { error "empty channel (use :1 or :2)" }
+    if {$ch!=1 && $ch!=2} { error "unsupported channel: $ch" }
+    set chan $ch
+
+    # basic sine output, HiZ
+    $dev cmd "C${chan}:BSWV WVTP,DC"
+    $dev cmd "C${chan}:MDWV STATE,OFF"
+    $dev cmd "C${chan}:SWWV STATE,OFF"
+    $dev cmd "C${chan}:BTWV STATE,OFF"
+    $dev cmd "C${chan}:ARWV STATE,OFF"
+    $dev cmd "C${chan}:HARM HARMSTATE,OFF"
+    $dev cmd "C${chan}:CMBN OFF"
+    $dev cmd "C${chan}:INVT OFF"
+    $dev cmd "C${chan}:OUTP LOAD,HZ"
+    $dev cmd "C${chan}:OUTP PLRT,NOR"
+  }
+
+  method set_volt {v} {
+    # check if output is off:
+    set l [$dev cmd "C${chan}:OUTP?"]
+    regexp {OUTP (ON|OFF),} $l tmp o
+    if {$o eq {OFF}} { $dev cmd "C${chan}:OUTP ON" }
+    $dev cmd "C${chan}:BSWV OFST,$v"
+  }
+  method off {} {
+    $dev cmd "C${chan}:BSWV OFST,0"
+    $dev cmd "C${chan}:OUTP OFF"
+  }
+  method get_volt {} {
+    set l [$dev cmd "C${chan}:BSWV?"]
+    regexp {,OFST,([0-9\.]+)V} $l tmp v
+    return $v
+  }
+}
+
 ######################################################################
 # Use LakeShore 370 outputs as dc sources.
 # ID string:
