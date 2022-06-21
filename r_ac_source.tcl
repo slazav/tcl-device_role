@@ -179,57 +179,55 @@ itcl::class keysight {
     dev_set_par $dev "OUTP${chan}:LOAD"      "INF"
   }
 
+  # get_* methods do NOT update interface.
+  # If they are called regularly, it should not
+  # prevent user from typing new values in the interface.
+  method get_volt {}  {
+    set v [expr [$dev cmd "${sour_pref}VOLT?"]]
+    if {$ac_shift != 0} {set v [expr $v-$ac_shift]}
+    return $v
+  }
+  method get_freq {} {
+    return [expr [$dev cmd "${sour_pref}FREQ?"]]
+  }
+  method get_offs {} {
+    return [expr [$dev cmd "${sour_pref}VOLT:OFFS?"]]
+  }
+  method get_phase {} {
+    return [expr [$dev cmd "${sour_pref}PHAS?"]]
+  }
+  method get_out {} {
+    return [$dev cmd "OUTP${chan}?"]
+  }
+
+
   method set_ac {f v {o 0} {p {}}} {
-    chain $f $v $o $p
+    chain $f $v $o $p; # update interface
     dev_check $dev "${sour_pref}APPLY:SIN $f,[expr $v+$ac_shift],$o"
     if {$p ne {}} {set_phase $p}
   }
-
-  method get_volt {}  {
-    set v [$dev cmd "${sour_pref}VOLT?"]
-    return [expr $v - $ac_shift]
-  }
-  method get_freq {} {
-    set freq [expr [$dev cmd "${sour_pref}FREQ?"]]
-    return $freq
-  }
-  method get_offs {} {
-    set offs [expr [$dev cmd "${sour_pref}VOLT:OFFS?"]]
-    return $offs
-  }
-  method get_phase {} {
-    set phase [expr [$dev cmd "${sour_pref}PHAS?"]]
-    return $phase
-  }
-  method get_out {} {
-    set out [$dev cmd "OUTP${chan}?"]
-    return $out
-  }
-
   method set_volt {v} {
-    chain $v
-    set volt [format %.3f $v]
-    dev_set_par $dev "${sour_pref}VOLT" [expr $v+$ac_shift]
-    get_volt
+    chain $v;  # set value in the base class (update interface)
+    if {$ac_shift != 0} {set v [expr $v+$ac_shift]}
+    dev_set_par $dev "${sour_pref}VOLT" $v
   }
   method set_freq {v} {
     dev_set_par $dev "${sour_pref}FREQ" $v
-    get_freq
   }
   method set_offs {v}  {
+    chain $v
     dev_set_par $dev "${sour_pref}VOLT:OFFS" $v
-    get_offs
   }
   method set_phase {v} {
+    chain $v
     set v [expr $v-int($v/360.0)*360]
     dev_set_par $dev "${sour_pref}PHAS" $v
-    get_phase
   }
   method set_out {v} {
   # For Keysight generators it maybe useful to switch to burst mode
   # to reduce signal leakage.
+    chain $v
     dev_set_par $dev "OUTP${chan}" [expr {$v?1:0}]
-    get_out
   }
 
   method set_sync {state} {
