@@ -340,7 +340,7 @@ itcl::class siglent {
     $dev cmd "C${chan}:OUTP [expr {$v?{ON}:{OFF}}]"
   }
 
-  method set_sync {state} {
+  method set_sync {v} {
     $dev cmd "C${chan}:SYNC [expr {$v?{ON}:{OFF}}]"
   }
 }
