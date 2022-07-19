@@ -315,6 +315,7 @@ itcl::class siglent {
       set phse [expr $p-int($p/360.0)*360]
       $dev cmd "C${chan}:BSWV PHSE,$phse"
     }
+    if {! [get_out]} { $dev cmd "C${chan}:OUTP ON" }
   }
   method set_volt {v} {
     chain $v
