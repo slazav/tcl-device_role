@@ -245,6 +245,11 @@ itcl::class keysight {
 #
 # Siglent Technologies,SDG1032X,SDG1XDCC6R1389,1.01.01.33R1B10
 #
+# Channels: "", 1, 2
+# If channel is empty, use channel 1 for signal, channel 2 for sync.
+# This could be useful because rear-panel sync only produce 50ns pulses
+# and only for f<10MHz.
+
 itcl::class siglent {
   inherit interface
   proc test_id {id} {
@@ -253,11 +258,16 @@ itcl::class siglent {
   }
 
   variable chan
+  variable ch2sync 0; # use ch2 for TTL sync signal
   constructor {d ch id args} {
     set dev $d
     set max_v 20
     set min_v 0.002
-    if {$ch=={}} { error "empty channel (use :1 or :2)" }
+    if {$ch=={}} {
+      set ch 1
+      set ch2sync 1
+    }
+
     if {$ch!=1 && $ch!=2} { error "unsupported channel: $ch" }
     set chan $ch
 
@@ -272,6 +282,35 @@ itcl::class siglent {
     $dev cmd "C${chan}:INVT OFF"
     $dev cmd "C${chan}:OUTP LOAD,HZ"
     $dev cmd "C${chan}:OUTP PLRT,NOR"
+
+    # use chan2 as 5V square sync signal
+    if {$ch2sync} {
+      $dev cmd "C2:MDWV STATE,OFF"
+      $dev cmd "C2:SWWV STATE,OFF"
+      $dev cmd "C2:BTWV STATE,OFF"
+      $dev cmd "C2:ARWV STATE,OFF"
+      $dev cmd "C2:HARM HARMSTATE,OFF"
+      $dev cmd "C2:CMBN OFF"
+      $dev cmd "C2:INVT OFF"
+      $dev cmd "C2:OUTP LOAD,HZ"
+      $dev cmd "C2:OUTP PLRT,NOR"
+      # 0->5V square
+      $dev cmd "C2:BSWV WVTP,SQUARE"
+      $dev cmd "C2:BSWV AMP,2.5"
+      $dev cmd "C2:BSWV OFST,2.5"
+      $dev cmd "C2:BSWV DUTY,50"
+      $dev cmd "C2:BSWV PHSE,0"
+      # channel coupling
+      $dev cmd "COUP TRACE,OFF"
+      $dev cmd "COUP STATE,ON"
+      $dev cmd "COUP FCOUP,ON"
+      $dev cmd "COUP FDEV,0"
+      $dev cmd "COUP FRAT,1"
+      $dev cmd "COUP PCOUP,OFF"
+      $dev cmd "COUP ACOUP,OFF"
+      # output on
+      $dev cmd "C2:OUTP ON"
+    }
   }
 
 
@@ -343,7 +382,12 @@ itcl::class siglent {
   }
 
   method set_sync {v} {
-    $dev cmd "C${chan}:SYNC [expr {$v?{ON}:{OFF}}]"
+    if {$ch2sync} {
+      $dev cmd "C2:OUT [expr {$v?{ON}:{OFF}}]"
+    }\
+    else {
+      $dev cmd "C${chan}:SYNC [expr {$v?{ON}:{OFF}}]"
+    }
   }
 }
 
