@@ -212,6 +212,7 @@ itcl::class keysight {
     dev_set_par $dev "${sour_pref}VOLT" $v
   }
   method set_freq {v} {
+    chain $v
     dev_set_par $dev "${sour_pref}FREQ" $v
   }
   method set_offs {v}  {
