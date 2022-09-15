@@ -157,6 +157,7 @@ itcl::class TEST {
 # Use Keysight N6700B device in a power_suply role.
 # ID string:
 #  Agilent Technologies,N6700B,MY54010313,D.04.07
+#  Keysight Technologies,N6700C,MY56003645,E.02.03.3189
 #
 # Supported modules:
 #  * N6731B
@@ -177,6 +178,7 @@ itcl::class keysight_n6700b {
   inherit interface
   proc test_id {id} {
     if {[regexp {,N6700B,} $id]} {return 1}
+    if {[regexp {,N6700C,} $id]} {return 1}
   }
 
   variable chan;  # channel to use (1..4)
