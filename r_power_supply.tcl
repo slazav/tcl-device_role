@@ -592,7 +592,7 @@ itcl::class siglent {
   public variable max_v;
   public variable min_i_step;
   public variable min_v_step;
-  public variable i_prec 0.01;
+  public variable i_prec 0.02;
 
   constructor {d ch id} {
     set dev $d
