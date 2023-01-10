@@ -48,6 +48,7 @@ itcl::class interface {
   method set_phase {v} {set phase $v}
   method set_out {v}   {set out [expr {$v?1:0}]}; # turn output on/off (without affecting other set/get commands)
 
+  method get_device_info {} {return $dev}
 
   # Non-zero AC shift. I use it to implement self-compensation
   # when using with Femto lock-ins + input transformers. 
@@ -88,17 +89,16 @@ itcl::class interface {
 
     # Main frame:
     set root $tkroot
-    labelframe $root -text $title -font {-weight bold -size 10}
+    labelframe $root -text "$title: [get_device_info]" -font {-weight bold -size 10}
 
     # On/Off button, generator label
     checkbutton $root.out -text "Output ON"\
        -variable [itcl::scope out] -command "$this set_out $[itcl::scope out]"
-    label $root.gen -text "Device: [get_device]"
-    grid $root.out $root.gen -padx 5 -pady 2 -sticky w -columnspan 2
+    grid $root.out -padx 5 -pady 2 -sticky w -columnspan 4
 
     # separator
-    frame $root.sep -relief groove -borderwidth 1 -height 2
-    grid $root.sep -padx 5 -pady 1 -columnspan 4 -sticky ew
+#    frame $root.sep -relief groove -borderwidth 1 -height 2
+#    grid $root.sep -padx 5 -pady 1 -columnspan 4 -sticky ew
 
     # Frequency/amplitude/offset/phase entries
     label $root.freq_l -text "freq,Hz:"
@@ -167,7 +167,8 @@ itcl::class keysight {
   inherit keysight_gen interface
   proc test_id {id} {keysight_gen::test_id $id}
   # we use Device from keysight_gen class
-  method get_device {} {return $keysight_gen::dev}
+
+  method get_device_info {} {return $keysight_gen::dev}
 
   constructor {d ch id args} {keysight_gen::constructor $d $ch $id} {
     set max_v 20

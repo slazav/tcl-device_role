@@ -30,6 +30,8 @@ itcl::class interface {
   # the last operation.
   method get_status {} {return $status}; # Device status (text)
 
+  method get_device_info {} {return $dev}
+
   ##################
   # Role-specific Tk widget.
   # It can be modified/replaced in drivers if needed.
@@ -43,7 +45,7 @@ itcl::class interface {
   variable widget_options [list\
       {-bar_w}       bar_w    200\
       {-bar_h}       bar_h    10\
-      {-title}       title    {Lock-in:}
+      {-title}       title    {Lock-in}
   ]
 
   # creat widget
@@ -52,11 +54,7 @@ itcl::class interface {
 
     # Main frame:
     set root $tkroot
-    labelframe $root -text $title -font {-weight bold -size 10}
-
-    # Device
-    label $root.dev_l -text "Device: ${dev}"
-    grid $root.dev_l -columnspan 2 -padx 5 -pady 2 -sticky w
+    labelframe $root -text "$title: [get_device_info]" -font {-weight bold -size 10}
 
     # Measurement result
     label $root.xy -textvariable [itcl::scope xy_i] -font {-weight bold -size 10}
@@ -302,14 +300,14 @@ itcl::class femto_pico {
 
 
   ############################
+  method get_device_info {} {
+    if {$divider!=1} {set div ", divider 1:$divider"} else {set div ""}
+    return ${dev}:$chan_x,$chan_y$div
+  }
 
   method make_widget {tkroot args} {
     chain $tkroot {*}$args
     set root $tkroot
-
-    # Modify device label (include channels and divider):
-    if {$divider!=1} {set div_l ", divider 1:$divider"} else {set div_l ""}
-    $root.dev_l configure -text "Device: ${dev}:$chan_x,$chan_y$div_l"
 
     if {$show_adc} {
       # Range combobox:
@@ -343,8 +341,7 @@ itcl::class femto_pico {
         ttk::combobox $root.femto_range -textvariable [itcl::scope femto_range]\
           -values $femto_ranges
 
-        grid $root.femto_tconst -columnspan 2 -padx 2 -pady 1 -sticky w
-        grid $root.femto_range  -columnspan 2 -padx 2 -pady 1 -sticky w
+        grid $root.femto_tconst $root.femto_range -padx 2 -pady 1 -sticky w
       }\
       else {
         label $root.femto_tconst -textvariable [itcl::scope femto_tconst]
