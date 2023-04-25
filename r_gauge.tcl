@@ -793,11 +793,15 @@ itcl::class picoscope {
         # if amplitude is too small, try to decrease the range and repeat
         #  -- for DC $ret value can be negative
         #  -- also max/min sometimes fail with only 1 arg
-        set max_pos [::tcl::mathfunc::max {*}$ret 0]
-        set min_neg [::tcl::mathfunc::min {*}$ret 0]
-        set max [expr max($max_pos, -$min_neg)]
-        if {$auto == 1 && $justinc==0 && $max < [expr 0.5*$range]} {
-          if {![catch {dec_range}]} continue
+        if {$auto == 1} {
+          set max 0
+          foreach v $ret {
+            set av [expr abs($v)]
+            if {$max < $av} {set max $av}
+          }
+          if {$justinc==0 && $max < [expr 0.5*$range]} {
+            if {![catch {dec_range}]} continue
+          }
         }
         break
       }
