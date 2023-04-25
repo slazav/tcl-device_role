@@ -129,5 +129,92 @@ itcl::class keysight {
   method set_phase {v} { dev_set_par $dev "${sour_pref}BURST:PHASE" $v }
 }
 
+itcl::class siglent {
+  inherit interface
+  proc test_id {id} {
+    if {[regexp {,SDG1032X,} $id]} {return {SDG1032X}}
+    if {[regexp {,SDG1062X,} $id]} {return {SDG1062X}}; # not tested
+  }
+
+  variable chan
+  variable ch2sync 0; # use ch2 for TTL sync signal
+  constructor {d ch id args} {
+    set dev $d
+    set max_v 20
+    set min_v 0.002
+
+    if {$ch!=1 && $ch!=2} { error "unsupported channel: $ch" }
+    set chan $ch
+
+    # basic sine output, HiZ
+    $dev cmd "C${chan}:BSWV WVTP,SINE"
+    $dev cmd "C${chan}:MDWV STATE,OFF"
+    $dev cmd "C${chan}:SWWV STATE,OFF"
+    $dev cmd "C${chan}:BTWV STATE,OFF"
+    $dev cmd "C${chan}:ARWV STATE,OFF"
+    $dev cmd "C${chan}:HARM HARMSTATE,OFF"
+    $dev cmd "C${chan}:CMBN OFF"
+    $dev cmd "C${chan}:INVT OFF"
+    $dev cmd "C${chan}:OUTP LOAD,HZ"
+    $dev cmd "C${chan}:OUTP PLRT,NOR"
+
+    # set burst mode
+    $dev cmd "C${chan}:BTWV CARR,WVTP,SIN"  # carrier waveform
+    $dev cmd "C${chan}:BTWV GATE_NCYC,NCYC" # mode (GATE, NCYC)
+    $dev cmd "C${chan}:BTWV TRSR,MAN" # trigger (EXT, INT, MAN)
+    $dev cmd "C${chan}:BTWV DLAY,0"   # trigger delay,s
+    $dev cmd "C${chan}:BTWV TRMD,RISE"  # Trigger out mode
+    $dev cmd "C${chan}:BTWV STATE,ON"
+  }
+
+  method set_burst {fre amp ncyc {offs 0} {ph 0}} {
+    $dev cmd "C${chan}:BTWV CARR,FRQ,$fre"  # carrier frequency
+    $dev cmd "C${chan}:BTWV CARR,AMP,$amp"
+    $dev cmd "C${chan}:BTWV CARR,OFST,$offs"
+    $dev cmd "C${chan}:BTWV TIME,$ncyc"
+    $dev cmd "C${chan}:BTWV STPS,$ph"
+  }
+
+  method do_burst {} {
+    $dev cmd "C${chan}:BTWV MTRIG" # send manual trigger
+  }
+
+  method get_volt {}  {
+    set l [$dev cmd "C${chan}:BTWV?"]
+    regexp {,AMP,([0-9\.]+)V,} $l tmp v
+    return $v
+  }
+  method get_freq {} {
+    set l [$dev cmd "C${chan}:BTWV?"]
+    regexp {,FRQ,([0-9\.]+)HZ,} $l tmp v
+    return $v
+  }
+  method get_offs {} {
+    set l [$dev cmd "C${chan}:BTWV?"]
+    regexp {,OFST,([0-9\.]+)V,} $l tmp v
+    return $v
+  }
+  method get_phase {} {
+    set l [$dev cmd "C${chan}:BTWV?"]
+    regexp {,STPS,([0-9\.]+)} $l tmp v
+    return $v
+  }
+  method get_cycl {} {
+    set l [$dev cmd "C${chan}:BTWV?"]
+    regexp {,TIME,([0-9\.]+)} $l tmp v
+    return $v
+  }
+
+  method set_volt {v} { $dev cmd "C${chan}:BTWV CARR,AMP,$v" }
+  method set_freq {v} { $dev cmd "C${chan}:BTWV CARR,FRQ,$v" }
+  method set_offs {v} { $dev cmd "C${chan}:BTWV CARR,OFST,$v" }
+  method set_sycl {v} { $dev cmd "C${chan}:BTWV TIME,$v" }
+  method set_phase {v} {
+    set v [expr $v-int($v/360.0)*360]
+    $dev cmd "C${chan}:BTWV STPS,$v"
+  }
+
+}
+
 ######################################################################
 } # namespace
