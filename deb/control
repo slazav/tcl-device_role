@@ -1,0 +1,9 @@
+Source: tcl-device-role
+Section: System
+Priority: optional
+Maintainer: Vladislav Zavjalov <vl.zavjalov@gmail.com>
+Standards-Version: ${ver}
+
+Package: tcl-device-role
+Architecture: all
+Description: DeviceRole library, standardized drivers for devices
