@@ -161,7 +161,7 @@ itcl::class TEST {
 # 1-channel devices (No channels supported):
 #Agilent
 #Technologies,33511B,MY52300310,2.03-1.19-2.00-52-00
-#
+#Agilent Technologies,33521B,MY52701054,2.09-1.19-2.00-52-00
 
 itcl::class keysight {
   inherit keysight_gen interface

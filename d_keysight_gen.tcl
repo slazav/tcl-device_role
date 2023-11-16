@@ -9,7 +9,7 @@
 ## Agilent Technologies,33522A,MY50005619,2.03-1.19-2.00-52-00
 ## Agilent
 ## Technologies,33511B,MY52300310,2.03-1.19-2.00-52-00
-
+## Agilent Technologies,33521B,MY52701054,2.09-1.19-2.00-52-00
 
 
 itcl::class keysight_gen {
@@ -36,7 +36,8 @@ itcl::class keysight_gen {
       33509B -
       33511B -
       33520A -
-      33521A { set nch 1 }
+      33521A -
+      33521B { set nch 1 }
       33510B -
       33522A { set nch 2 }
       default { error "keysight_gen::get_nch: unknown model: $model" }
@@ -64,6 +65,7 @@ itcl::class keysight_gen {
     if {[regexp {,33511B,} $id]} {return {33511B}}
     if {[regexp {,33520A,} $id]} {return {33520A}}
     if {[regexp {,33521A,} $id]} {return {33521A}}
+    if {[regexp {,33521B,} $id]} {return {33521B}}
     # 2-channel
     if {[regexp {,33510B,} $id]} {return {33510B}}
     if {[regexp {,33522A,} $id]} {return {33522A}}
