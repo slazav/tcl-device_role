@@ -73,8 +73,8 @@ itcl::class keysight {
     dev_set_par $dev "OUTP${chan}" "0"
   }
   method get_volt {} {
-    if {[$dev cmd "OUTP${chan}?"] == 0} {return 0}
-    return [$dev cmd "${sour_pref}VOLT:OFFS? "]
+    if {[Device2::ask $dev "OUTP${chan}?"] == 0} {return 0}
+    return [Device2::ask $dev "${sour_pref}VOLT:OFFS? "]
   }
 }
 
@@ -96,31 +96,31 @@ itcl::class siglent_gen {
     set chan $ch
 
     # basic sine output, HiZ
-    $dev cmd "C${chan}:BSWV WVTP,DC"
-    $dev cmd "C${chan}:MDWV STATE,OFF"
-    $dev cmd "C${chan}:SWWV STATE,OFF"
-    $dev cmd "C${chan}:BTWV STATE,OFF"
-    $dev cmd "C${chan}:ARWV STATE,OFF"
-    $dev cmd "C${chan}:HARM HARMSTATE,OFF"
-    $dev cmd "C${chan}:CMBN OFF"
-    $dev cmd "C${chan}:INVT OFF"
-    $dev cmd "C${chan}:OUTP LOAD,HZ"
-    $dev cmd "C${chan}:OUTP PLRT,NOR"
+    Device2::ask $dev "C${chan}:BSWV WVTP,DC"
+    Device2::ask $dev "C${chan}:MDWV STATE,OFF"
+    Device2::ask $dev "C${chan}:SWWV STATE,OFF"
+    Device2::ask $dev "C${chan}:BTWV STATE,OFF"
+    Device2::ask $dev "C${chan}:ARWV STATE,OFF"
+    Device2::ask $dev "C${chan}:HARM HARMSTATE,OFF"
+    Device2::ask $dev "C${chan}:CMBN OFF"
+    Device2::ask $dev "C${chan}:INVT OFF"
+    Device2::ask $dev "C${chan}:OUTP LOAD,HZ"
+    Device2::ask $dev "C${chan}:OUTP PLRT,NOR"
   }
 
   method set_volt {v} {
     # check if output is off:
-    set l [$dev cmd "C${chan}:OUTP?"]
+    set l [Device2::ask $dev "C${chan}:OUTP?"]
     regexp {OUTP (ON|OFF),} $l tmp o
-    if {$o eq {OFF}} { $dev cmd "C${chan}:OUTP ON" }
-    $dev cmd "C${chan}:BSWV OFST,$v"
+    if {$o eq {OFF}} { Device2::ask $dev "C${chan}:OUTP ON" }
+    Device2::ask $dev "C${chan}:BSWV OFST,$v"
   }
   method off {} {
-    $dev cmd "C${chan}:BSWV OFST,0"
-    $dev cmd "C${chan}:OUTP OFF"
+    Device2::ask $dev "C${chan}:BSWV OFST,0"
+    Device2::ask $dev "C${chan}:OUTP OFF"
   }
   method get_volt {} {
-    set l [$dev cmd "C${chan}:BSWV?"]
+    set l [Device2::ask $dev "C${chan}:BSWV?"]
     regexp {,OFST,([0-9\.]+)V} $l tmp v
     return $v
   }
@@ -192,8 +192,8 @@ itcl::class LSCI370 {
       set max_v [expr $rng*$res]
       set min_v_step [expr 1e-5*$max_v]
 
-      $dev cmd HTRRNG $rng_num
-      $dev cmd CMODE  3
+      Device2::ask $dev HTRRNG $rng_num
+      Device2::ask $dev CMODE  3
       return
     }
 
@@ -204,11 +204,11 @@ itcl::class LSCI370 {
       set min_v [expr $bipolar? -10:0]
       set max_v 10.0
       set min_v_step [expr 1e-5*$max_v]
-      set ret [$dev cmd "ANALOG? $output"]
+      set ret [Device2::ask $dev "ANALOG? $output"]
       set ret [split $ret ","]
       lset ret 0 $bipolar
       lset ret 1 2
-      $dev cmd "ANALOG $output,[join $ret {,}]"
+      Device2::ask $dev "ANALOG $output,[join $ret {,}]"
       return
     }
 
@@ -222,17 +222,17 @@ itcl::class LSCI370 {
       set v [expr 100*$volt/$max_v]
       if {$v > 100} {set v 100}
       if {$v < 0} {set v 0}
-      $dev cmd "MOUT $v"
+      Device2::ask $dev "MOUT $v"
     }\
     else {
       set v [expr 100.0*$volt/$max_v]
       if {$v > 100} {set v 100}
       if {$v < -100} {set v -100}
       if {!$bipolar && $v < 0} {set v 0}
-      set ret [$dev cmd "ANALOG? $output"]
+      set ret [Device2::ask $dev "ANALOG? $output"]
       set ret [split $ret ","]
       lset ret 6 $v
-      $dev cmd "ANALOG $output,[join $ret {,}]"
+      Device2::ask $dev "ANALOG $output,[join $ret {,}]"
 
     }
   }
@@ -243,11 +243,11 @@ itcl::class LSCI370 {
 
   method get_volt {} {
     if {$output == {H}} {
-      set v [$dev cmd "MOUT?"]
+      set v [Device2::ask $dev "MOUT?"]
       return [expr $v*$max_v/100.0]
     }\
     else {
-      set ret [$dev cmd "ANALOG? $output"]
+      set ret [Device2::ask $dev "ANALOG? $output"]
       set ret [split $ret ","]
       set v [lindex $ret 6]
       return [expr $v*$max_v/100.0]
@@ -281,12 +281,12 @@ itcl::class sr844 {
     set min_v_step 0.001
   }
   method set_volt {val} {
-    $dev cmd "AUXO${chan},$val"
+    Device2::ask $dev "AUXO${chan},$val"
   }
   method off {} {
     set_volt 0
   }
-  method get_volt {} { return [$dev cmd "AUXO?${chan}"] }
+  method get_volt {} { return [Device2::ask $dev "AUXO?${chan}"] }
 }
 
 ######################################################################
@@ -301,9 +301,9 @@ itcl::class tenma {
   constructor {d ch id} {${base}::constructor $d $ch $id} {
     # set max current
     ${base}::set_curr $max_i
-    $dev cmd "OVP0";  # clear OVP/OCP
-    $dev cmd "OCP0";  #
-    $dev cmd "BEEP1"; # beep off
+    Device2::ask $dev "OVP0";  # clear OVP/OCP
+    Device2::ask $dev "OCP0";  #
+    Device2::ask $dev "BEEP1"; # beep off
   }
   method set_volt {val} {
     ${base}::set_volt $val
@@ -369,38 +369,38 @@ itcl::class sm2400 {
     set dev $d
   }
   method set_volt {val} {
-    $dev cmd ":sour:volt:lev $val"
+    Device2::ask $dev ":sour:volt:lev $val"
   }
   method set_curr {val} {
-    $dev cmd ":sour:curr:lev $val"
+    Device2::ask $dev ":sour:curr:lev $val"
   }
 
   method set_volt_range {val} {
-    $dev cmd ":sour:volt:range $val"
+    Device2::ask $dev ":sour:volt:range $val"
   }
   method set_curr_range {val} {
-    $dev cmd ":sour:curr:range $val"
+    Device2::ask $dev ":sour:curr:range $val"
   }
 
   method get_volt {} {
-    $dev cmd ":sour:volt:lev?"
+    Device2::ask $dev ":sour:volt:lev?"
   }
   method get_curr {} {
-    $dev cmd ":sour:curr:lev?"
+    Device2::ask $dev ":sour:curr:lev?"
   }
 
   method get_volt_range {} {
-    $dev cmd ":sour:volt:range?"
+    Device2::ask $dev ":sour:volt:range?"
   }
   method get_curr_range {} {
-    $dev cmd ":sour:curr:range?"
+    Device2::ask $dev ":sour:curr:range?"
   }
 
   method on {} {
-    $dev cmd ":outp on"
+    Device2::ask $dev ":outp on"
   }
   method off {} {
-    $dev cmd ":outp off"
+    Device2::ask $dev ":outp off"
   }
 }
 

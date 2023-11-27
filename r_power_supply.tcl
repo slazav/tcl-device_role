@@ -199,7 +199,7 @@ itcl::class keysight_n6700b {
     }
 
     # detect module type:
-    set mod [$dev cmd "syst:chan:mod? (@$chan)"]
+    set mod [Device2::ask $dev "syst:chan:mod? (@$chan)"]
     switch -glob -- $mod {
       N6731B {
         set min_i 0.06
@@ -210,13 +210,13 @@ itcl::class keysight_n6700b {
         # modules has two current ranges: 0.1 and 1.5 or 3A
         switch -- $range {
           H {
-            $dev cmd "curr:rang 1,(@$chan)"
+            Device2::ask $dev "curr:rang 1,(@$chan)"
             set min_i 1e-3;
             set min_i_step 1e-4
             set i_prec 1.2e-3; # we can set 0 and be at 0.001
           }
           L {
-            $dev cmd "curr:rang 0.09,(@$chan)"
+            Device2::ask $dev "curr:rang 0.09,(@$chan)"
             set min_i 1e-4;
             set min_i_step 2e-6
             set i_prec 1.2e-4
@@ -226,8 +226,8 @@ itcl::class keysight_n6700b {
       }
       default { error "$this: unknown module: $mod"}
     }
-    set max_i [$dev cmd "curr:rang? (@$chan)"]
-    set max_v [$dev cmd "volt:rang? (@$chan)"]
+    set max_i [Device2::ask $dev "curr:rang? (@$chan)"]
+    set max_v [Device2::ask $dev "volt:rang? (@$chan)"]
     set min_v 0
     # if polarity switch is used, we can go to -max_i, -max_v
     if {$sw_pos!={} && $sw_neg!={}} {
@@ -243,12 +243,12 @@ itcl::class keysight_n6700b {
   method check_power {} {
     # pin1 should be 1 with NEG or POS polarity
     # depending on the pin state (which we do not know)
-    set data [$dev cmd "dig:inp:data?"]
+    set data [Device2::ask $dev "dig:inp:data?"]
     if { [get_pin $data 1] } { return }
     # revert polarity and try again:
-    set pol [string equal [$dev cmd "dig:pin1:pol?"] "NEG"]
-    $dev cmd "dig:pin1:pol [expr $pol?{POS}:{NEG}]"
-    set data [$dev cmd "dig:inp:data?"]
+    set pol [string equal [Device2::ask $dev "dig:pin1:pol?"] "NEG"]
+    Device2::ask $dev "dig:pin1:pol [expr $pol?{POS}:{NEG}]"
+    set data [Device2::ask $dev "dig:inp:data?"]
     if { [get_pin $data 1] } { return }
     # fail:
     error "Failed to operate polarity switch. Check relay power."
@@ -257,13 +257,13 @@ itcl::class keysight_n6700b {
   # Get digital port pin state (n=1..7).
   # Value should be inverted if polarity is negative.
   method get_pin {data n} {
-    set pol [string equal [$dev cmd "dig:pin$n:pol?"] "NEG"]
+    set pol [string equal [Device2::ask $dev "dig:pin$n:pol?"] "NEG"]
     return [ expr {(($data >> ($n-1)) + $pol)%2} ]
   }
   # Set pin in the data.
   # Value should be inverted if polarity is negative.
   method set_pin {data n v} {
-    set pol [string equal [$dev cmd "dig:pin$n:pol?"] "NEG"]
+    set pol [string equal [Device2::ask $dev "dig:pin$n:pol?"] "NEG"]
     set v [expr {($v+$pol)%2}]
     set data [expr {1 << ($n-1) | $data}]
     if {$v==0} { set data [expr {$data ^ 1 << ($n-1)}] }
@@ -273,7 +273,7 @@ itcl::class keysight_n6700b {
   method get_pol {chan sw_pos sw_neg} {
     check_power
     # Read current pin settings (this works only of power is on)
-    set data [expr int([$dev cmd "dig:inp:data?"])]
+    set data [expr int([Device2::ask $dev "dig:inp:data?"])]
     set d1 [get_pin $data $sw_pos]
     set d2 [get_pin $data $sw_neg]
     if {$d1 == 0 && $d2 == 1} { return +1 }
@@ -290,13 +290,13 @@ itcl::class keysight_n6700b {
   method set_pol {pol chan sw_pos sw_neg} {
     check_power
     # Set pins if needed
-    set data [expr int([$dev cmd "dig:inp:data?"])]
+    set data [expr int([Device2::ask $dev "dig:inp:data?"])]
     set data1 $data
     set data1 [set_pin $data1 $sw_pos [expr {$pol<=0}]]
     set data1 [set_pin $data1 $sw_neg [expr {$pol>0}]]
-    if {$data1 != $data } {$dev cmd "DIG:OUTP:DATA $data1"}
+    if {$data1 != $data } {Device2::ask $dev "DIG:OUTP:DATA $data1"}
     # Check new state:
-    if { $data1 != [$dev cmd "DIG:INP:DATA?"] } {
+    if { $data1 != [Device2::ask $dev "DIG:INP:DATA?"] } {
       error "Failed to operate polarity switch. Wrong pin setting."}
   }
 
@@ -304,33 +304,33 @@ itcl::class keysight_n6700b {
   method set_volt {val} {
     # No polarity switch or zero current:
     if {($sw_pos == {} || $sw_neg == {}) || $val == 0} {
-      $dev cmd "volt $val,(@$chan)"
+      Device2::ask $dev "volt $val,(@$chan)"
       return
     }
     # set channel polarity, set current
     set_pol $val $chan $sw_pos $sw_neg
-    $dev cmd "volt [expr abs($val)],(@$chan)"
+    Device2::ask $dev "volt [expr abs($val)],(@$chan)"
   }
 
   method set_curr {val} {
     # No polarity switch or zero current:
     if {($sw_pos=={} || $sw_neg=={}) || $val == 0} {
-      $dev cmd "curr $val,(@$chan)"
+      Device2::ask $dev "curr $val,(@$chan)"
       return
     }
     # set channel polarity, set current
     set_pol $val $chan $sw_pos $sw_neg
-    $dev cmd "curr [expr abs($val)],(@$chan)"
+    Device2::ask $dev "curr [expr abs($val)],(@$chan)"
   }
 
   method get_volt {} {
-    set val [$dev cmd "meas:volt? (@$chan)"]
+    set val [Device2::ask $dev "meas:volt? (@$chan)"]
     if {$sw_pos!={} && $sw_neg!={}} {
       set val [expr {$val*[get_pol $chan $sw_pos $sw_neg]}] }
     return $val
   }
   method get_curr_abs {} {
-    return [$dev cmd "meas:curr? (@$chan)"]
+    return [Device2::ask $dev "meas:curr? (@$chan)"]
   }
   method get_curr {} {
     set val [get_curr_abs]
@@ -340,17 +340,17 @@ itcl::class keysight_n6700b {
   }
 
   method set_ovp  {val} {
-    $dev cmd "volt $val,(@$chan)"
-    $dev cmd "volt:prot $val,(@$chan)"
+    Device2::ask $dev "volt $val,(@$chan)"
+    Device2::ask $dev "volt:prot $val,(@$chan)"
   }
   method set_ocp  {val} {
-    $dev cmd "curr $val,(@$chan)"
-    $dev cmd "curr:prot $val,(@$chan)"
+    Device2::ask $dev "curr $val,(@$chan)"
+    Device2::ask $dev "curr:prot $val,(@$chan)"
   }
 
   method cc_reset {} {
-    set oc [$dev cmd "stat:oper:cond? (@$chan)"]
-    set qc [$dev cmd "stat:ques:cond? (@$chan)"]
+    set oc [Device2::ask $dev "stat:oper:cond? (@$chan)"]
+    set qc [Device2::ask $dev "stat:ques:cond? (@$chan)"]
 
     # if device is in CC mode and no error conditions - do nothing
     if {$oc&2 && $qc==0} {return}
@@ -358,18 +358,18 @@ itcl::class keysight_n6700b {
 
     # if OVP is triggered set zero current and clear the OVP
     if {$oc&4 && $qc&1} {
-      $dev cmd "curr 0,(@$chan)"
+      Device2::ask $dev "curr 0,(@$chan)"
       after 100
-      $dev cmd "outp:prot:cle (@$chan)"
+      Device2::ask $dev "outp:prot:cle (@$chan)"
       after 100
       return
     }
 
     # if output is off, set zero current and turn on the output
     if {$oc&4} {
-      $dev cmd "curr 0,(@$chan)"
+      Device2::ask $dev "curr 0,(@$chan)"
       after 100
-      $dev cmd "outp on,(@$chan)"
+      Device2::ask $dev "outp on,(@$chan)"
       after 100
       return
     }
@@ -388,7 +388,7 @@ itcl::class keysight_n6700b {
 
   method get_stat {} {
     # error states
-    set n [$dev cmd "stat:ques:cond? (@$chan)"]
+    set n [Device2::ask $dev "stat:ques:cond? (@$chan)"]
     if {! [string is integer $n] } {return BadQCond}
     if {$n & 1} {return OV}
     if {$n & 2} {return OC}
@@ -403,7 +403,7 @@ itcl::class keysight_n6700b {
     if {$n & 1024} {return UNR}
     if {$n & 2048} {return PROT}
     if {$n & 4096} {return OSC}
-    set n [$dev cmd "stat:oper:cond? (@$chan)"]
+    set n [Device2::ask $dev "stat:oper:cond? (@$chan)"]
     if {! [string is integer $n] } {return BadOCond}
     if {$n & 1} {return CV}
     if {$n & 2} {return CC}
@@ -439,8 +439,8 @@ itcl::class tenma {
   public variable i_prec 0.01;
 
   # redefine lock/unlock methods with our dev
-  method lock {} {$dev lock}
-  method unlock {} {$dev unlock}
+  method lock {} {Device2::lock $dev}
+  method unlock {} {Device2::unlock $dev}
 
   proc test_id {id} {
     if {[regexp {KORADKA6003PV2.0} $id]}   {return {72-2550}}; # Tenma 72-2550
@@ -477,47 +477,47 @@ itcl::class tenma {
 
   method set_volt {val} {
     set val [expr {round($val*100)/100.0}]
-    $dev cmd "VSET1:$val"
+    Device2::ask $dev "VSET1:$val"
   }
   method set_curr {val} {
     set val [expr {round($val*1000)/1000.0}]
-    $dev cmd "ISET1:$val"
+    Device2::ask $dev "ISET1:$val"
   }
   method set_ovp  {val} {
     set_volt $val
-    $dev cmd "OVP1"
+    Device2::ask $dev "OVP1"
   }
   method set_ocp  {val} {
     set_curr $val
-    $dev cmd "OCP1"
+    Device2::ask $dev "OCP1"
   }
-  method get_curr {} { return [$dev cmd "IOUT1?"] }
-  method get_volt {} { return [$dev cmd "VOUT1?"] }
+  method get_curr {} { return [Device2::ask $dev "IOUT1?"] }
+  method get_volt {} { return [Device2::ask $dev "VOUT1?"] }
 
   method cc_reset {} {
     ## set current to actual current, turn output on
-    set c [$dev cmd "IOUT1?"]
-    $dev cmd "ISET1:$c"
-    $dev cmd "BEEP1"; # beep off
-    $dev cmd "OUT1"
+    set c [Device2::ask $dev "IOUT1?"]
+    Device2::ask $dev "ISET1:$c"
+    Device2::ask $dev "BEEP1"; # beep off
+    Device2::ask $dev "OUT1"
   }
 
   method cv_reset {} {
     ## set voltage to actual value, turn output on
-    set c [$dev cmd "VOUT1?"]
-    $dev cmd "VSET1:$c"
-    $dev cmd "BEEP1"; # beep off
-    $dev cmd "OUT1"
+    set c [Device2::ask $dev "VOUT1?"]
+    Device2::ask $dev "VSET1:$c"
+    Device2::ask $dev "BEEP1"; # beep off
+    Device2::ask $dev "OUT1"
   }
 
   method off {} {
     # turn output off
-    $dev cmd "OUT0"
+    Device2::ask $dev "OUT0"
   }
 
   method on {} {
     # turn output on
-    $dev cmd "OUT1"
+    Device2::ask $dev "OUT1"
   }
 
   ##
@@ -549,7 +549,7 @@ itcl::class tenma {
   # OVP trig   10010001 145 145 145
 
   method get_stat {} {
-    set n [$dev cmd "STATUS?"]
+    set n [Device2::ask $dev "STATUS?"]
     binary scan $n c nv;          # convert char -> 8-bit integer
     set nv [expr { $nv & 0xFF }]; # convert to unsigned
     if {($nv&(1<<6)) == 0} {return "OFF"}
@@ -573,8 +573,8 @@ itcl::class tenma {
 itcl::class siglent {
   inherit interface
   # redefine lock/unlock methods with our dev
-  method lock {} {$dev lock}
-  method unlock {} {$dev unlock}
+  method lock {} {Device2:lock $dev}
+  method unlock {} {Device2::unlock $dev}
 
   proc test_id {id} {
     if {[regexp {,SPD1168X,} $id]} {return {SPD1168X}}
@@ -635,12 +635,12 @@ itcl::class siglent {
 
   }
 
-  method set_volt {val} { $dev cmd "CH$chan:VOLT $val" }
-  method set_curr {val} { $dev cmd "CH$chan:CURR $val" }
-  method get_volt {} { $dev cmd "MEAS:VOLT? CH$chan" }
-  method get_curr {} { $dev cmd "MEAS:CURR? CH$chan" }
-  method on  {} { $dev cmd "OUTP CH$chan,ON" }
-  method off {} { $dev cmd "OUTP CH$chan,OFF" }
+  method set_volt {val} { Device2::ask $dev "CH$chan:VOLT $val" }
+  method set_curr {val} { Device2::ask $dev "CH$chan:CURR $val" }
+  method get_volt {} { Device2::ask $dev "MEAS:VOLT? CH$chan" }
+  method get_curr {} { Device2::ask $dev "MEAS:CURR? CH$chan" }
+  method on  {} { Device2::ask $dev "OUTP CH$chan,ON" }
+  method off {} { Device2::ask $dev "OUTP CH$chan,OFF" }
 
   ## Set current to actual current, turn output on.
   ## For Siglent devices switching from V0-OFF to 0-ON
@@ -681,7 +681,7 @@ itcl::class siglent {
     set ccbit [expr $chan-1]
     set onbit [expr $chan+3]
     # get status from the device
-    set n [$dev cmd "SYST:STAT?"]
+    set n [Device2::ask $dev "SYST:STAT?"]
     scan $n 0x%x n;  # hex->num
     set n [expr { $n & 0xFFFF }]; # convert to unsigned
     if {($n&(1<<$onbit)) == 0} {return "OFF"}

@@ -184,21 +184,21 @@ itcl::class keysight {
   # If they are called regularly, it should not
   # prevent user from typing new values in the interface.
   method get_volt {}  {
-    set v [expr [$dev cmd "${sour_pref}VOLT?"]]
+    set v [expr [Device2::ask $dev "${sour_pref}VOLT?"]]
     if {$ac_shift != 0} {set v [expr $v-$ac_shift]}
     return $v
   }
   method get_freq {} {
-    return [expr [$dev cmd "${sour_pref}FREQ?"]]
+    return [expr [Device2::ask $dev "${sour_pref}FREQ?"]]
   }
   method get_offs {} {
-    return [expr [$dev cmd "${sour_pref}VOLT:OFFS?"]]
+    return [expr [Device2::ask $dev "${sour_pref}VOLT:OFFS?"]]
   }
   method get_phase {} {
-    return [expr [$dev cmd "${sour_pref}PHAS?"]]
+    return [expr [Device2::ask $dev "${sour_pref}PHAS?"]]
   }
   method get_out {} {
-    return [$dev cmd "OUTP${chan}?"]
+    return [Device2::ask $dev "OUTP${chan}?"]
   }
 
 
@@ -273,44 +273,44 @@ itcl::class siglent {
     set chan $ch
 
     # basic sine output, HiZ
-    $dev cmd "C${chan}:BSWV WVTP,SINE"
-    $dev cmd "C${chan}:MDWV STATE,OFF"
-    $dev cmd "C${chan}:SWWV STATE,OFF"
-    $dev cmd "C${chan}:BTWV STATE,OFF"
-    $dev cmd "C${chan}:ARWV STATE,OFF"
-    $dev cmd "C${chan}:HARM HARMSTATE,OFF"
-    $dev cmd "C${chan}:CMBN OFF"
-    $dev cmd "C${chan}:INVT OFF"
-    $dev cmd "C${chan}:OUTP LOAD,HZ"
-    $dev cmd "C${chan}:OUTP PLRT,NOR"
+    Device2::ask $dev "C${chan}:BSWV WVTP,SINE"
+    Device2::ask $dev "C${chan}:MDWV STATE,OFF"
+    Device2::ask $dev "C${chan}:SWWV STATE,OFF"
+    Device2::ask $dev "C${chan}:BTWV STATE,OFF"
+    Device2::ask $dev "C${chan}:ARWV STATE,OFF"
+    Device2::ask $dev "C${chan}:HARM HARMSTATE,OFF"
+    Device2::ask $dev "C${chan}:CMBN OFF"
+    Device2::ask $dev "C${chan}:INVT OFF"
+    Device2::ask $dev "C${chan}:OUTP LOAD,HZ"
+    Device2::ask $dev "C${chan}:OUTP PLRT,NOR"
 
     # use chan2 as 5V square sync signal
     if {$ch2sync} {
-      $dev cmd "C2:MDWV STATE,OFF"
-      $dev cmd "C2:SWWV STATE,OFF"
-      $dev cmd "C2:BTWV STATE,OFF"
-      $dev cmd "C2:ARWV STATE,OFF"
-      $dev cmd "C2:HARM HARMSTATE,OFF"
-      $dev cmd "C2:CMBN OFF"
-      $dev cmd "C2:INVT OFF"
-      $dev cmd "C2:OUTP LOAD,HZ"
-      $dev cmd "C2:OUTP PLRT,NOR"
+      Device2::ask $dev "C2:MDWV STATE,OFF"
+      Device2::ask $dev "C2:SWWV STATE,OFF"
+      Device2::ask $dev "C2:BTWV STATE,OFF"
+      Device2::ask $dev "C2:ARWV STATE,OFF"
+      Device2::ask $dev "C2:HARM HARMSTATE,OFF"
+      Device2::ask $dev "C2:CMBN OFF"
+      Device2::ask $dev "C2:INVT OFF"
+      Device2::ask $dev "C2:OUTP LOAD,HZ"
+      Device2::ask $dev "C2:OUTP PLRT,NOR"
       # 0->5V square
-      $dev cmd "C2:BSWV WVTP,SQUARE"
-      $dev cmd "C2:BSWV AMP,2.5"
-      $dev cmd "C2:BSWV OFST,2.5"
-      $dev cmd "C2:BSWV DUTY,50"
-      $dev cmd "C2:BSWV PHSE,0"
+      Device2::ask $dev "C2:BSWV WVTP,SQUARE"
+      Device2::ask $dev "C2:BSWV AMP,2.5"
+      Device2::ask $dev "C2:BSWV OFST,2.5"
+      Device2::ask $dev "C2:BSWV DUTY,50"
+      Device2::ask $dev "C2:BSWV PHSE,0"
       # channel coupling
-      $dev cmd "COUP TRACE,OFF"
-      $dev cmd "COUP STATE,ON"
-      $dev cmd "COUP FCOUP,ON"
-      $dev cmd "COUP FDEV,0"
-      $dev cmd "COUP FRAT,1"
-      $dev cmd "COUP PCOUP,OFF"
-      $dev cmd "COUP ACOUP,OFF"
+      Device2::ask $dev "COUP TRACE,OFF"
+      Device2::ask $dev "COUP STATE,ON"
+      Device2::ask $dev "COUP FCOUP,ON"
+      Device2::ask $dev "COUP FDEV,0"
+      Device2::ask $dev "COUP FRAT,1"
+      Device2::ask $dev "COUP PCOUP,OFF"
+      Device2::ask $dev "COUP ACOUP,OFF"
       # output on
-      $dev cmd "C2:OUTP ON"
+      Device2::ask $dev "C2:OUTP ON"
     }
   }
 
@@ -319,28 +319,28 @@ itcl::class siglent {
   # If they are called regularly, it should not
   # prevent user from typing new values in the interface.
   method get_volt {}  {
-    set l [$dev cmd "C${chan}:BSWV?"]
+    set l [Device2::ask $dev "C${chan}:BSWV?"]
     regexp {,AMP,([0-9\.]+)V,} $l tmp v
     if {$ac_shift != 0} {set v [expr $v-$ac_shift]}
     return $v
   }
   method get_freq {} {
-    set l [$dev cmd "C${chan}:BSWV?"]
+    set l [Device2::ask $dev "C${chan}:BSWV?"]
     regexp {,FRQ,([0-9\.]+)HZ,} $l tmp v
     return $v
   }
   method get_offs {} {
-    set l [$dev cmd "C${chan}:BSWV?"]
+    set l [Device2::ask $dev "C${chan}:BSWV?"]
     regexp {,OFST,([0-9\.]+)V,} $l tmp v
     return $v
   }
   method get_phase {} {
-    set l [$dev cmd "C${chan}:BSWV?"]
+    set l [Device2::ask $dev "C${chan}:BSWV?"]
     regexp {,PHSE,([0-9\.]+)} $l tmp v
     return $v
   }
   method get_out {} {
-    set l [$dev cmd "C${chan}:OUTP?"]
+    set l [Device2::ask $dev "C${chan}:OUTP?"]
     regexp {OUTP (ON|OFF),} $l tmp v
     return [expr {$v eq {ON}}]
   }
@@ -349,45 +349,45 @@ itcl::class siglent {
   method set_ac {f v {o 0} {p {}}} {
     chain $f $v $o $p; # call method from base class to update interface
     if {$ac_shift != 0} {set v [expr $v+$ac_shift]}
-    $dev cmd "C${chan}:BSWV FRQ,$f"
-    $dev cmd "C${chan}:BSWV AMP,$v"
-    $dev cmd "C${chan}:BSWV OFST,$o"
+    Device2::ask $dev "C${chan}:BSWV FRQ,$f"
+    Device2::ask $dev "C${chan}:BSWV AMP,$v"
+    Device2::ask $dev "C${chan}:BSWV OFST,$o"
     if {$p ne {}} {
       set phse [expr $p-int($p/360.0)*360]
-      $dev cmd "C${chan}:BSWV PHSE,$phse"
+      Device2::ask $dev "C${chan}:BSWV PHSE,$phse"
     }
-    if {! [get_out]} { $dev cmd "C${chan}:OUTP ON" }
+    if {! [get_out]} { Device2::ask $dev "C${chan}:OUTP ON" }
   }
   method set_volt {v} {
     chain $v
     if {$ac_shift != 0} {set v [expr $v+$ac_shift]}
-    $dev cmd "C${chan}:BSWV AMP,$v"
+    Device2::ask $dev "C${chan}:BSWV AMP,$v"
   }
   method set_freq {v} {
     chain $v
-    $dev cmd "C${chan}:BSWV FRQ,$v"
+    Device2::ask $dev "C${chan}:BSWV FRQ,$v"
   }
   method set_offs {v}  {
     chain $v
-    $dev cmd "C${chan}:BSWV OFST,$v"
+    Device2::ask $dev "C${chan}:BSWV OFST,$v"
   }
   method set_phase {v} {
     chain $v
     set v [expr $v-int($v/360.0)*360]
-    $dev cmd "C${chan}:BSWV PHSE,$v"
+    Device2::ask $dev "C${chan}:BSWV PHSE,$v"
   }
   method set_out {v} {
   # switch to burst mode to reduce signal leakage?
     chain $v
-    $dev cmd "C${chan}:OUTP [expr {$v?{ON}:{OFF}}]"
+    Device2::ask $dev "C${chan}:OUTP [expr {$v?{ON}:{OFF}}]"
   }
 
   method set_sync {v} {
     if {$ch2sync} {
-      $dev cmd "C2:OUT [expr {$v?{ON}:{OFF}}]"
+      Device2::ask $dev "C2:OUT [expr {$v?{ON}:{OFF}}]"
     }\
     else {
-      $dev cmd "C${chan}:SYNC [expr {$v?{ON}:{OFF}}]"
+      Device2::ask $dev "C${chan}:SYNC [expr {$v?{ON}:{OFF}}]"
     }
   }
 }

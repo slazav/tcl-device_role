@@ -198,7 +198,7 @@ itcl::class keysight {
   }
 
   ############################
-  method get {} { return [$dev cmd "read?"] }
+  method get {} { return [Device2::ask $dev "read?"] }
 
   ############################
   method conf_list {} {
@@ -212,9 +212,9 @@ itcl::class keysight {
 
   method conf_get {name} {
     switch -exact -- $name {
-      autorange  { return [$dev cmd "$func:RANGE:AUTO?"]}
-      range      { return [expr {[$dev cmd "$func:RANGE?"]}]}
-      nplc       { return [expr {[$dev cmd "$func:NPLC?"]}]}
+      autorange  { return [Device2::ask $dev "$func:RANGE:AUTO?"]}
+      range      { return [expr {[Device2::ask $dev "$func:RANGE?"]}]}
+      nplc       { return [expr {[Device2::ask $dev "$func:NPLC?"]}]}
       names      { return $names}
       default {error "unknown configuration name: $name"}
     }
@@ -264,7 +264,7 @@ itcl::class keithley_nanov {
   }
 
   ############################
-  method get {} { return [$dev cmd "read?"] }
+  method get {} { return [Device2::ask $dev "read?"] }
 
 }
 
@@ -374,11 +374,11 @@ itcl::class keysight_mplex {
 
   method conf_get {name} {
     switch -exact -- $name {
-      autorange  { return [merge_conf [$dev cmd "$func:RANGE:AUTO? (@$chans)"]]}
-      range      { return [merge_conf [$dev cmd "$func:RANGE? (@$chans)"]]}
-      autodelay  { return [merge_conf [$dev cmd "ROUT:CHAN:DEL:AUTO? (@$chans)"]]}
-      delay      { return [merge_conf [$dev cmd "ROUT:CHAN:DEL? (@$chans)"]]}
-      nplc       { return [merge_conf [$dev cmd "$func:NPLC? (@$chans)"]]}
+      autorange  { return [merge_conf [Device2::ask $dev "$func:RANGE:AUTO? (@$chans)"]]}
+      range      { return [merge_conf [Device2::ask $dev "$func:RANGE? (@$chans)"]]}
+      autodelay  { return [merge_conf [Device2::ask $dev "ROUT:CHAN:DEL:AUTO? (@$chans)"]]}
+      delay      { return [merge_conf [Device2::ask $dev "ROUT:CHAN:DEL? (@$chans)"]]}
+      nplc       { return [merge_conf [Device2::ask $dev "$func:NPLC? (@$chans)"]]}
       names      { return $names}
       default {error "unknown configuration name: $name"}
     }
@@ -451,20 +451,20 @@ itcl::class sr844 {
   ############################
   method get {} {
     # If channel is 1 or 2 read auxilary input:
-    if {$chan==1 || $chan==2} { return [$dev cmd "AUXO?${chan}"] }
+    if {$chan==1 || $chan==2} { return [Device2::ask $dev "AUXO?${chan}"] }
 
     # If autorange is needed, use AGAN command:
-    if {$autorange} {$dev cmd "AGAN"; after 100}
+    if {$autorange} {Device2::ask $dev "AGAN"; after 100}
 
     # check status and return NaN in needed
-    set s [$dev cmd "LIAS?"]
+    set s [Device2::ask $dev "LIAS?"]
     if {$s != 0} { return [lrepeat [llength $names] NaN] }
 
     # Return space-separated values depending on channel setting
-    if {$chan=="XY"} { return [string map {"," " "} [$dev cmd SNAP?1,2]] }
-    if {$chan=="RT"} { return [string map {"," " "} [$dev cmd SNAP?3,5]] }
-    if {$chan=="FXY"} { return [string map {"," " "} [$dev cmd SNAP?8,1,2]] }
-    if {$chan=="FRT"} { return [string map {"," " "} [$dev cmd SNAP?8,3,5]] }
+    if {$chan=="XY"} { return [string map {"," " "} [Device2::ask $dev SNAP?1,2]] }
+    if {$chan=="RT"} { return [string map {"," " "} [Device2::ask $dev SNAP?3,5]] }
+    if {$chan=="FXY"} { return [string map {"," " "} [Device2::ask $dev SNAP?8,1,2]] }
+    if {$chan=="FRT"} { return [string map {"," " "} [Device2::ask $dev SNAP?8,3,5]] }
   }
   method get_auto {} { return [get 1] }
 
@@ -484,34 +484,34 @@ itcl::class sr844 {
     if {$chan==1 || $chan==2} { error "can't set range for auxilar input $chan" }
     set n [lsearch -real -exact $ranges $val]
     if {$n<0} {error "unknown range setting: $val"}
-    $dev cmd "SENS $n"
+    Device2::ask $dev "SENS $n"
   }
 
   method set_tconst {val} {
     if {$chan==1 || $chan==2} { error "can't set time constant for auxilar input $chan" }
     set n [lsearch -real -exact $tconsts $val]
     if {$n<0} {error "unknown time constant setting: $val"}
-    $dev cmd "OFLT $n"
+    Device2::ask $dev "OFLT $n"
   }
 
   method get_range  {} {
     if {$chan==1 || $chan==2} { return $aux_range}
-    set n [$dev cmd "SENS?"]
+    set n [Device2::ask $dev "SENS?"]
     return [lindex $ranges $n]
   }
 
   method get_tconst {} {
     if {$chan==1 || $chan==2} { return $aux_tconst}
-    set n [$dev cmd "OFLT?"]
+    set n [Device2::ask $dev "OFLT?"]
     return [lindex $tconsts $n]
   }
 
   method get_status_raw {} {
-    return [$dev cmd "LIAS?"]
+    return [Device2::ask $dev "LIAS?"]
   }
 
   method get_status {} {
-    set s [$dev cmd "LIAS?"]
+    set s [Device2::ask $dev "LIAS?"]
     set res {}
     if {$s & (1<<0)} {lappend res "UNLOCK"}
     if {$s & (1<<7)} {lappend res "FRE_CH"}
@@ -616,27 +616,27 @@ itcl::class sr830 {
   ############################
   method get {} {
     # If channel is 1 or 2 read auxilary input:
-    if {$chan==1 || $chan==2} { return [$dev cmd "OAUX?${chan}"] }
+    if {$chan==1 || $chan==2} { return [Device2::ask $dev "OAUX?${chan}"] }
 
     # If autorange is needed, use AGAN command:
-    if {$autorange} {$dev cmd "AGAN"; after 100}
+    if {$autorange} {Device2::ask $dev "AGAN"; after 100}
 
     # check status and return NaN in needed
-    set s [$dev cmd "LIAS?"]
+    set s [Device2::ask $dev "LIAS?"]
     if {$s != 0} { return [lrepeat [llength $names] NaN] }
 
     # Return space-separated values depending on channel setting
-    if {$chan=="XY"}  { return [string map {"," " "} [$dev cmd SNAP?1,2]] }
-    if {$chan=="RT"}  { return [string map {"," " "} [$dev cmd SNAP?3,4]] }
-    if {$chan=="FXY"} { return [string map {"," " "} [$dev cmd SNAP?9,1,2]] }
-    if {$chan=="FRT"} { return [string map {"," " "} [$dev cmd SNAP?9,3,4]] }
+    if {$chan=="XY"}  { return [string map {"," " "} [Device2::ask $dev SNAP?1,2]] }
+    if {$chan=="RT"}  { return [string map {"," " "} [Device2::ask $dev SNAP?3,4]] }
+    if {$chan=="FXY"} { return [string map {"," " "} [Device2::ask $dev SNAP?9,1,2]] }
+    if {$chan=="FRT"} { return [string map {"," " "} [Device2::ask $dev SNAP?9,3,4]] }
   }
   method get_auto {} { return [get 1] }
 
   ############################
   method list_ranges {} {
     if {$chan==1 || $chan==2} {return $aux_range}
-    set src [$dev cmd "ISRC?"]
+    set src [Device2::ask $dev "ISRC?"]
     if {$src == 0 || $src == 1} { set ranges $ranges_V } { set ranges $ranges_A }
     return $ranges
   }
@@ -650,37 +650,37 @@ itcl::class sr830 {
     if {$chan==1 || $chan==2} { error "can't set range for auxilar input $chan" }
     set n [lsearch -real -exact $ranges $val]
     if {$n<0} {error "unknown range setting: $val"}
-    $dev cmd "SENS $n"
+    Device2::ask $dev "SENS $n"
   }
   method set_tconst {val} {
     if {$chan==1 || $chan==2} { error "can't set time constant for auxilar input $chan" }
     set n [lsearch -real -exact $tconsts $val]
     if {$n<0} {error "unknown time constant setting: $val"}
-    $dev cmd "OFLT $n"
+    Device2::ask $dev "OFLT $n"
   }
 
   ############################
   method get_range  {} {
     if {$chan==1 || $chan==2} { return $aux_range}
-    set src [$dev cmd "ISRC?"]
+    set src [Device2::ask $dev "ISRC?"]
     if {$src == 0 || $src == 1} { set ranges $ranges_V }\
     else { set ranges $ranges_A }
-    set n [$dev cmd "SENS?"]
+    set n [Device2::ask $dev "SENS?"]
     return [lindex $ranges $n]
   }
 
   method get_tconst {} {
     if {$chan==1 || $chan==2} { return $aux_tconst}
-    set n [$dev cmd "OFLT?"]
+    set n [Device2::ask $dev "OFLT?"]
     return [lindex $tconsts $n]
   }
 
   method get_status_raw {} {
-    return [$dev cmd "LIAS?"]
+    return [Device2::ask $dev "LIAS?"]
   }
 
   method get_status {} {
-    set s [$dev cmd "LIAS?"]
+    set s [Device2::ask $dev "LIAS?"]
     set res {}
     if {$s & (1<<0)} {lappend res "INP_OVR"}
     if {$s & (1<<1)} {lappend res "FLT_OVR"}
@@ -785,7 +785,7 @@ itcl::class picoscope {
     set dev $d
 
     # oscilloscope ranges
-    set ranges [$dev cmd ranges A]
+    set ranges [Device2::ask $dev ranges A]
     set range [get_range]
     if { $range == "undef" } {set range 1.0}
     set range_ref 10.0
@@ -802,14 +802,14 @@ itcl::class picoscope {
     # oscilloscope setup (pairs of channels: signal+reference)
     if {$osc_meas=="lockin"} {
       foreach {c1 c2} $osc_ch {
-        $dev cmd chan_set $c1 1 AC $range
-        if {$c1 != $c2} { $dev cmd chan_set $c2 1 AC $range_ref }
+        Device2::ask $dev chan_set $c1 1 AC $range
+        if {$c1 != $c2} { Device2::ask $dev chan_set $c2 1 AC $range_ref }
         }
     }
     if {$osc_meas=="DC"} {
         # oscilloscope setup
         foreach ch $osc_ch {
-          $dev cmd chan_set $ch 1 DC $range
+          Device2::ask $dev chan_set $ch 1 DC $range
         }
     }
   }
@@ -836,14 +836,14 @@ itcl::class picoscope {
       set dt [expr $tconst/$npt]
       set justinc 0; # avoid inc->dec loops
       while {1} {
-        $dev cmd trig_set NONE 0.1 FALLING 0
+        Device2::ask $dev trig_set NONE 0.1 FALLING 0
         # record signal
-        $dev cmd block $osc_ach 0 $npt $dt $sigfile
+        Device2::ask $dev block $osc_ach 0 $npt $dt $sigfile
 
         # check for overload (any signal channel)
         set ovl 0
         foreach {c1 c2} $osc_ch {
-          if {[$dev cmd filter -c $osc_nch($c1) -f overload $sigfile]} {set ovl 1}
+          if {[Device2::ask $dev filter -c $osc_nch($c1) -f overload $sigfile]} {set ovl 1}
         }
 
         # try to increase the range and repeat
@@ -858,7 +858,7 @@ itcl::class picoscope {
         set max_amp 0
         set ret {}
         foreach {c1 c2} $osc_ch {
-          set v [$dev cmd filter -f lockin -c $osc_nch($c1),$osc_nch($c2) $sigfile]
+          set v [Device2::ask $dev filter -f lockin -c $osc_nch($c1),$osc_nch($c2) $sigfile]
           if {$v == {}} {
             set f 0
             set x 0
@@ -895,14 +895,14 @@ itcl::class picoscope {
       set justinc 0; # avoid inc->dec loops
 
       while {1} {
-        $dev cmd trig_set NONE 0.1 FALLING 0
+        Device2::ask $dev trig_set NONE 0.1 FALLING 0
         # record signal
-        $dev cmd block $osc_ach 0 $npt $dt $sigfile
+        Device2::ask $dev block $osc_ach 0 $npt $dt $sigfile
 
         # check for overload
         set ovl 0
         foreach ch $osc_ch {
-          if {[$dev cmd filter -c $osc_nch($ch) -f overload $sigfile]} {set ovl 1}
+          if {[Device2::ask $dev filter -c $osc_nch($ch) -f overload $sigfile]} {set ovl 1}
         }
 
         # try to increase the range and repeat
@@ -919,7 +919,7 @@ itcl::class picoscope {
           lappend nch $osc_nch($ch)
         }
         set nch [join $nch {,}]
-        set ret [$dev cmd filter -c $nch -f dc $sigfile]
+        set ret [Device2::ask $dev filter -c $nch -f dc $sigfile]
 
         # if it is still overloaded
         if {$ovl == 1} {
@@ -948,7 +948,7 @@ itcl::class picoscope {
   }
   method get_range {} {
     set c [lindex $osc_ch 0]
-    set ch_cnf [$dev cmd chan_get $c]
+    set ch_cnf [Device2::ask $dev chan_get $c]
     return [lindex $ch_cnf end]
   }
   method dec_range {} {
@@ -1049,7 +1049,7 @@ itcl::class picoADC {
   method get {} {
     set ret {}
     foreach c $chans m $modes {
-      lappend ret [$dev cmd get_val $c $m $range $convt]
+      lappend ret [Device2::ask $dev get_val $c $m $range $convt]
     }
     return $ret
   }
@@ -1057,8 +1057,8 @@ itcl::class picoADC {
   ############################
   method conf_list {} {
     return [list {
-      range      [$dev cmd ranges]
-      tconst     [$dev cmd tconvs]
+      range      [Device2::ask $dev ranges]
+      tconst     [Device2::ask $dev tconvs]
       names      const
     }]
   }
@@ -1104,7 +1104,7 @@ itcl::class leak_ag_vs {
   ############################
   method get {} {
     set v "?LP"
-    set ret [$dev cmd $v]
+    set ret [Device2::ask $dev $v]
 
     # cut command name (1st word) from response if needed
     if {[lindex {*}$ret 0] == $v} {set ret [lrange {*}$ret 1 end]}
@@ -1152,8 +1152,8 @@ itcl::class leak_asm340 {
   ############################
   method get {} {
     # inlet pressure, measurement (calibrated)
-    set pin   [conv_number [$dev cmd ?PE]]
-    set leak  [conv_number [$dev cmd ?LE2]]
+    set pin   [conv_number [Device2::ask $dev ?PE]]
+    set leak  [conv_number [Device2::ask $dev ?LE2]]
     return [list $leak $pin]
   }
 }
@@ -1193,11 +1193,11 @@ itcl::class lcr_et4502 {
     }
     set names [list $A $B]
     set dev $d
-    $dev cmd FUNC:DEV:MODE OFF
-    $dev cmd FUNC:IMP:A $A
-    $dev cmd FUNC:IMP:B $B
-    $dev cmd FUNC:IMP:RANG:AUTO ON
-    $dev cmd FUNC:IMP:EQU SER
+    Device2::ask $dev FUNC:DEV:MODE OFF
+    Device2::ask $dev FUNC:IMP:A $A
+    Device2::ask $dev FUNC:IMP:B $B
+    Device2::ask $dev FUNC:IMP:RANG:AUTO ON
+    Device2::ask $dev FUNC:IMP:EQU SER
     after 100
   }
 
@@ -1212,9 +1212,9 @@ itcl::class lcr_et4502 {
 
   method conf_get {name} {
     switch -exact -- $name {
-      freq  { return [$dev cmd freq?]}
-      volt  { return [$dev cmd volt?]}
-      aper  { return [$dev cmd aper?]}
+      freq  { return [Device2::ask $dev freq?]}
+      volt  { return [Device2::ask $dev volt?]}
+      aper  { return [Device2::ask $dev aper?]}
       names { return $names }
       default {error "unknown configuration name: $name"}
     }
@@ -1222,16 +1222,16 @@ itcl::class lcr_et4502 {
 
   method conf_set {name val} {
     switch -exact -- $name {
-      freq  { $dev cmd freq $val}
-      volt  { $dev cmd volt $val}
-      aper  { $dev cmd aper $val}
+      freq  { Device2::ask $dev freq $val}
+      volt  { Device2::ask $dev volt $val}
+      aper  { Device2::ask $dev aper $val}
       default {error "unknown configuration name: $name"}
     }
   }
 
   ############################
   method get {} {
-    return [join [split [$dev cmd fetch?] {,}]]
+    return [join [split [Device2::ask $dev fetch?] {,}]]
   }
 }
 

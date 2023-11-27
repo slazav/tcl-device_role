@@ -23,8 +23,8 @@ itcl::class keysight_gen {
   protected variable model;
 
   # redefine lock/unlock methods with our dev
-  method lock {} {$dev lock}
-  method unlock {} {$dev unlock}
+  method lock {} {Device2::lock $dev}
+  method unlock {} {Devie2::unlock $dev}
 
   # Check channel setting and set "chan" and "sour_pref" variables
   constructor {d ch id} {

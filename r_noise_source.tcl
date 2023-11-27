@@ -95,14 +95,14 @@ itcl::class keysight {
     dev_set_par $dev "OUTP${chan}" "1"
   }
   method get_volt {} {
-    if {[$dev cmd "OUTP${chan}?"] == 0} {return 0}
-    return [$dev cmd "${sour_pref}VOLT?"]
+    if {[Device2::ask $dev "OUTP${chan}?"] == 0} {return 0}
+    return [Device2::ask $dev "${sour_pref}VOLT?"]
   }
   method get_bw   {} {
-    return [$dev cmd "${sour_pref}FUNC:NOISE:BANDWIDTH?"]
+    return [Device2::ask $dev "${sour_pref}FUNC:NOISE:BANDWIDTH?"]
   }
   method get_offs {} {
-    return [$dev cmd "${sour_pref}VOLT:OFFS?"]
+    return [Device2::ask $dev "${sour_pref}VOLT:OFFS?"]
   }
 }
 

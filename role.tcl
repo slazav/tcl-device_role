@@ -48,11 +48,6 @@ proc DeviceRole {name role args} {
   set ID [Device2::ask $name *IDN?]
   if {$ID == {}} {error "Can't get device id: $name"}
 
-  # old-style interface
-  if {[info commands $name] eq {}} { Device $name}
-  if {[lindex [$name info heritage] end] != {::Device}} {
-    error "can't create device: non-device object exists: $name" }
-
   # Find all classes in the correct namespace.
   # Try to match ID string, return an object of the correct class.
   foreach m [itcl::find classes ${n}::*] {

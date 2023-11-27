@@ -113,14 +113,14 @@ itcl::class keysight {
   }
 
   method do_burst {} {
-    $dev cmd *TRG
+    Device2::ask $dev *TRG
   }
 
-  method get_volt  {} { return [$dev cmd "${sour_pref}VOLT?"] }
-  method get_freq  {} { return [$dev cmd "${sour_pref}FREQ?"] }
-  method get_offs  {} { return [$dev cmd "${sour_pref}VOLT:OFFS?"] }
-  method get_cycl  {} { return [$dev cmd "${sour_pref}BURST:NCYC?"] }
-  method get_phase {} { return [$dev cmd "${sour_pref}BURST:PHASE?"] }
+  method get_volt  {} { return [Device2::ask $dev "${sour_pref}VOLT?"] }
+  method get_freq  {} { return [Device2::ask $dev "${sour_pref}FREQ?"] }
+  method get_offs  {} { return [Device2::ask $dev "${sour_pref}VOLT:OFFS?"] }
+  method get_cycl  {} { return [Device2::ask $dev "${sour_pref}BURST:NCYC?"] }
+  method get_phase {} { return [Device2::ask $dev "${sour_pref}BURST:PHASE?"] }
 
   method set_volt  {v} { dev_set_par $dev "${sour_pref}VOLT" $v }
   method set_freq  {v} { dev_set_par $dev "${sour_pref}FREQ" $v }
@@ -147,71 +147,71 @@ itcl::class siglent {
     set chan $ch
 
     # basic sine output, HiZ
-    $dev cmd "C${chan}:BSWV WVTP,SINE"
-    $dev cmd "C${chan}:MDWV STATE,OFF"
-    $dev cmd "C${chan}:SWWV STATE,OFF"
-    $dev cmd "C${chan}:BTWV STATE,OFF"
-    $dev cmd "C${chan}:ARWV STATE,OFF"
-    $dev cmd "C${chan}:HARM HARMSTATE,OFF"
-    $dev cmd "C${chan}:CMBN OFF"
-    $dev cmd "C${chan}:INVT OFF"
-    $dev cmd "C${chan}:OUTP LOAD,HZ"
-    $dev cmd "C${chan}:OUTP PLRT,NOR"
+    Device2::ask $dev "C${chan}:BSWV WVTP,SINE"
+    Device2::ask $dev "C${chan}:MDWV STATE,OFF"
+    Device2::ask $dev "C${chan}:SWWV STATE,OFF"
+    Device2::ask $dev "C${chan}:BTWV STATE,OFF"
+    Device2::ask $dev "C${chan}:ARWV STATE,OFF"
+    Device2::ask $dev "C${chan}:HARM HARMSTATE,OFF"
+    Device2::ask $dev "C${chan}:CMBN OFF"
+    Device2::ask $dev "C${chan}:INVT OFF"
+    Device2::ask $dev "C${chan}:OUTP LOAD,HZ"
+    Device2::ask $dev "C${chan}:OUTP PLRT,NOR"
 
     # set burst mode
-    $dev cmd "C${chan}:BTWV CARR,WVTP,SIN"  # carrier waveform
-    $dev cmd "C${chan}:BTWV GATE_NCYC,NCYC" # mode (GATE, NCYC)
-    $dev cmd "C${chan}:BTWV TRSR,MAN" # trigger (EXT, INT, MAN)
-    $dev cmd "C${chan}:BTWV DLAY,0"   # trigger delay,s
-    $dev cmd "C${chan}:BTWV TRMD,RISE"  # Trigger out mode
-    $dev cmd "C${chan}:BTWV STATE,ON"
+    Device2::ask $dev "C${chan}:BTWV CARR,WVTP,SIN"  # carrier waveform
+    Device2::ask $dev "C${chan}:BTWV GATE_NCYC,NCYC" # mode (GATE, NCYC)
+    Device2::ask $dev "C${chan}:BTWV TRSR,MAN" # trigger (EXT, INT, MAN)
+    Device2::ask $dev "C${chan}:BTWV DLAY,0"   # trigger delay,s
+    Device2::ask $dev "C${chan}:BTWV TRMD,RISE"  # Trigger out mode
+    Device2::ask $dev "C${chan}:BTWV STATE,ON"
   }
 
   method set_burst {fre amp ncyc {offs 0} {ph 0}} {
-    $dev cmd "C${chan}:BTWV CARR,FRQ,$fre"  # carrier frequency
-    $dev cmd "C${chan}:BTWV CARR,AMP,$amp"
-    $dev cmd "C${chan}:BTWV CARR,OFST,$offs"
-    $dev cmd "C${chan}:BTWV TIME,$ncyc"
-    $dev cmd "C${chan}:BTWV STPS,$ph"
+    Device2::ask $dev "C${chan}:BTWV CARR,FRQ,$fre"  # carrier frequency
+    Device2::ask $dev "C${chan}:BTWV CARR,AMP,$amp"
+    Device2::ask $dev "C${chan}:BTWV CARR,OFST,$offs"
+    Device2::ask $dev "C${chan}:BTWV TIME,$ncyc"
+    Device2::ask $dev "C${chan}:BTWV STPS,$ph"
   }
 
   method do_burst {} {
-    $dev cmd "C${chan}:BTWV MTRIG" # send manual trigger
+    Device2::ask $dev "C${chan}:BTWV MTRIG" # send manual trigger
   }
 
   method get_volt {}  {
-    set l [$dev cmd "C${chan}:BTWV?"]
+    set l [Device2::ask $dev "C${chan}:BTWV?"]
     regexp {,AMP,([0-9\.]+)V,} $l tmp v
     return $v
   }
   method get_freq {} {
-    set l [$dev cmd "C${chan}:BTWV?"]
+    set l [Device2::ask $dev "C${chan}:BTWV?"]
     regexp {,FRQ,([0-9\.]+)HZ,} $l tmp v
     return $v
   }
   method get_offs {} {
-    set l [$dev cmd "C${chan}:BTWV?"]
+    set l [Device2::ask $dev "C${chan}:BTWV?"]
     regexp {,OFST,([0-9\.]+)V,} $l tmp v
     return $v
   }
   method get_phase {} {
-    set l [$dev cmd "C${chan}:BTWV?"]
+    set l [Device2::ask $dev "C${chan}:BTWV?"]
     regexp {,STPS,([0-9\.]+)} $l tmp v
     return $v
   }
   method get_cycl {} {
-    set l [$dev cmd "C${chan}:BTWV?"]
+    set l [Device2::ask $dev "C${chan}:BTWV?"]
     regexp {,TIME,([0-9\.]+)} $l tmp v
     return $v
   }
 
-  method set_volt {v} { $dev cmd "C${chan}:BTWV CARR,AMP,$v" }
-  method set_freq {v} { $dev cmd "C${chan}:BTWV CARR,FRQ,$v" }
-  method set_offs {v} { $dev cmd "C${chan}:BTWV CARR,OFST,$v" }
-  method set_sycl {v} { $dev cmd "C${chan}:BTWV TIME,$v" }
+  method set_volt {v} { Device2::ask $dev "C${chan}:BTWV CARR,AMP,$v" }
+  method set_freq {v} { Device2::ask $dev "C${chan}:BTWV CARR,FRQ,$v" }
+  method set_offs {v} { Device2::ask $dev "C${chan}:BTWV CARR,OFST,$v" }
+  method set_sycl {v} { Device2::ask $dev "C${chan}:BTWV TIME,$v" }
   method set_phase {v} {
     set v [expr $v-int($v/360.0)*360]
-    $dev cmd "C${chan}:BTWV STPS,$v"
+    Device2::ask $dev "C${chan}:BTWV STPS,$v"
   }
 
 }
