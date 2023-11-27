@@ -27,3 +27,7 @@ install -m644 *.tcl %buildroot/%_tcldatadir/%teaname
 %_tcldatadir/%teaname/*
 
 %changelog
+* Mon Nov 27 2023 Vladislav Zavjalov <slazav@altlinux.org> 1.0-alt1
+- v1.0. Start versioning, it was a long modification history before this
+
+
