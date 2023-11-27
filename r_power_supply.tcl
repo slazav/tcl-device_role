@@ -80,8 +80,6 @@ itcl::class TEST {
     set i_prec 0.01
   }
   destructor {}
-  method lock {} {}
-  method unlock {} {}
 
   private method check_ocp {} {
     if {$mode=="OFF"} return
@@ -438,10 +436,6 @@ itcl::class tenma {
   public variable min_v_step 0.01;
   public variable i_prec 0.01;
 
-  # redefine lock/unlock methods with our dev
-  method lock {} {Device2::lock $dev}
-  method unlock {} {Device2::unlock $dev}
-
   proc test_id {id} {
     if {[regexp {KORADKA6003PV2.0} $id]}   {return {72-2550}}; # Tenma 72-2550
     if {[regexp {TENMA72-2550V2.0} $id]}   {return {72-2550}}; # Tenma 72-2550
@@ -572,9 +566,6 @@ itcl::class tenma {
 #
 itcl::class siglent {
   inherit interface
-  # redefine lock/unlock methods with our dev
-  method lock {} {Device2:lock $dev}
-  method unlock {} {Device2::unlock $dev}
 
   proc test_id {id} {
     if {[regexp {,SPD1168X,} $id]} {return {SPD1168X}}

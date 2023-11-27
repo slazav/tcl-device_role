@@ -87,8 +87,9 @@ itcl::class device_role::base_interface {
   # and optional option arguments.
   constructor {} {}
 
-  method lock {} {Device2::lock $dev}
-  method unlock {} {Device2::unlock $dev}
+  method lock {} {puts stderr "device_role: lock method not supported"}
+  method unlock {} {puts stderr "device_role: unlock method not supported"}
+
   method get_device {} {return $dev}
 
   # Get list of configuation options.
