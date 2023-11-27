@@ -1,9 +1,0 @@
-#!/usr/bin/tclsh
-
-source inc.tcl
-
-set dev1 [DeviceRole TEST     gauge2]
-set dev2 [DeviceRole TEST:RTT gauge2]
-
-puts [$dev1 get]
-puts [$dev2 get]
