@@ -4,28 +4,10 @@
 # Simplified interface:
 # - remove set_range, set_tconst, get_range,
 #   get_tconst, list_ranges, list_tconsts methods
-#   use conf_* interface instead.
 # - remove get_auto method.
 # - remove get_val_num, get_val_name methods,
 #   use configuration {names const} instead
-# - avoid multi-channel operations with complicated channel names.
-#   use conf_* interface instead of configuring device through channels
 # - NaN/Inf return if overloaded
-#
-# conf interface:
-# - conf_list            -- get list of all configuration parameters
-# - conf_type $name      -- get type of a parameter (const, float, int, string, <list> or "")
-# - conf_get $name       -- get values of a parameter
-# - conf_set $name $val  -- set value of a parameter
-#
-# Recommended parameter names for conf_*` interface:
-# - autorange bool   -- enable/disable autorange
-# - range  {<list>}  -- set/get manual range (user-readable names should be used)
-# - tconst {<list>}  -- set time constant (user-readable names should be used)
-# - minv   const     -- minimum value (number or list for multi-column get command)
-# - maxv   const     -- maximum value (number or list for multi-column get command)
-# - names  const     -- column names
-
 
 package require Itcl
 package require Device2
@@ -91,53 +73,6 @@ itcl::class TEST {
     return $data
   }
 
-  ############################
-  method conf_list {} {
-    return [list { minv maxv range tsweep tsweep_list names }]
-  }
-
-  method conf_type {name} {
-    switch -exact -- $name {
-      maxv        { return const}
-      minv        { return const}
-      range       { return {1 10 100 1k 10k} }
-      tsweep      { return int}
-      tsweep_list { return {5 10 15 20}}
-      names       { return const}
-      default {return ""}
-    }
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      maxv        { return $maxv}
-      minv        { return 0}
-      range       { return $range }
-      tsweep      { return $tsweep}
-      tsweep_list { return $tsweep}
-      names       { return [split $chan {}] }
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      range       {
-        set range $val
-        switch $range {
-          1   {set maxv 1}
-          10  {set maxv 10}
-          100 {set maxv 100}
-          1k  {set maxv 1000}
-          10k {set maxv 10000}
-          default {error "unknown range"}
-        }
-      }
-      tsweep      { set tsweep $val}
-      tsweep_list { set tsweep $val}
-      default {error "unknown configuration name: $name"}
-    }
-  }
 }
 
 ######################################################################
@@ -199,35 +134,6 @@ itcl::class keysight {
 
   ############################
   method get {} { return [Device2::ask $dev "read?"] }
-
-  ############################
-  method conf_list {} {
-    return [list {
-      autorange  bool
-      range      string
-      nplc       $nplc_type
-      names      const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      autorange  { return [Device2::ask $dev "$func:RANGE:AUTO?"]}
-      range      { return [expr {[Device2::ask $dev "$func:RANGE?"]}]}
-      nplc       { return [expr {[Device2::ask $dev "$func:NPLC?"]}]}
-      names      { return $names}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      autorange  { dev_set_par $dev "$func:RANGE:AUTO" $val}
-      range      { dev_set_par $dev "$func:RANGE" $val}
-      nplc       { dev_set_par $dev "$func:NPLC" $val}
-      default {error "unknown configuration name: $name"}
-    }
-  }
 
 }
 
@@ -359,42 +265,6 @@ itcl::class keysight_mplex {
     }
     return $v0
   }
-
-  ############################
-  method conf_list {} {
-    return [list {
-      autorange  bool
-      range      string
-      autodelay  float
-      delay      float
-      nplc       {0.02 0.2 1 10 100 MIN MAX}
-      names      const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      autorange  { return [merge_conf [Device2::ask $dev "$func:RANGE:AUTO? (@$chans)"]]}
-      range      { return [merge_conf [Device2::ask $dev "$func:RANGE? (@$chans)"]]}
-      autodelay  { return [merge_conf [Device2::ask $dev "ROUT:CHAN:DEL:AUTO? (@$chans)"]]}
-      delay      { return [merge_conf [Device2::ask $dev "ROUT:CHAN:DEL? (@$chans)"]]}
-      nplc       { return [merge_conf [Device2::ask $dev "$func:NPLC? (@$chans)"]]}
-      names      { return $names}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      autorange  { dev_check $dev "$func:RANGE:AUTO $val,(@$chans)"}
-      range      { dev_check $dev "$func:RANGE $val,(@$chans)"}
-      autodelay  { dev_check $dev "ROUT:CHAN:DEL:AUTO $val,(@$chans)"}
-      delay      { dev_check $dev "ROUT:CHAN:DEL $val,(@$chans)"}
-      nplc       { dev_check $dev "$func:NPLC $val,(@$chans)"}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
 }
 
 
@@ -523,37 +393,6 @@ itcl::class sr844 {
     if {$s & (1<<9)} {lappend res "CH2_OVR"}
     if {$res == {}} {lappend res "OK"}
     return [join $res " "]
-  }
-
-  ############################
-  method conf_list {} {
-    return [list {
-      autorange  bool
-      range      [list_ranges]
-      tconst     [list_tconsts]
-      names      const
-      status     const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      autorange  { return $autorange}
-      range      { return [get_range]}
-      tconst     { return [get_tconst]}
-      names      { return $names}
-      status     { return [get_status]}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      autorange  { set autorange 1}
-      range      { set_range $val}
-      tconst     { set_tconst $val}
-      default {error "unknown configuration name: $name"}
-    }
   }
 
 }
@@ -965,37 +804,6 @@ itcl::class picoscope {
     set_range [lindex $ranges [expr $n+1]]
   }
 
-  ############################
-  method conf_list {} {
-    return [list {
-      autorange  bool
-      range      $ranges
-      tconst     $tconsts
-      names      const
-      status     const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      autorange  { return $autorange}
-      range      { return [get_range]}
-      tconst     { return $tconst}
-      names      { return $names}
-      status     { return $status}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      autorange  { set autorange 1}
-      range      { set_range $val}
-      tconst     { set tconst $val}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
 }
 
 ######################################################################
@@ -1052,32 +860,6 @@ itcl::class picoADC {
       lappend ret [Device2::ask $dev get_val $c $m $range $convt]
     }
     return $ret
-  }
-
-  ############################
-  method conf_list {} {
-    return [list {
-      range      [Device2::ask $dev ranges]
-      tconst     [Device2::ask $dev tconvs]
-      names      const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      range      {return $range}
-      tconst     {return $convt}
-      names      {return $chans}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      range      { set range $val}
-      tconst     { set convt $val}
-      default {error "unknown configuration name: $name"}
-    }
   }
 
 }
@@ -1199,34 +981,6 @@ itcl::class lcr_et4502 {
     Device2::ask $dev FUNC:IMP:RANG:AUTO ON
     Device2::ask $dev FUNC:IMP:EQU SER
     after 100
-  }
-
-  method conf_list {} {
-    return [list {
-      freq    int
-      volt    float
-      apert   {SLOW MED FAST}
-      names      const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      freq  { return [Device2::ask $dev freq?]}
-      volt  { return [Device2::ask $dev volt?]}
-      aper  { return [Device2::ask $dev aper?]}
-      names { return $names }
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      freq  { Device2::ask $dev freq $val}
-      volt  { Device2::ask $dev volt $val}
-      aper  { Device2::ask $dev aper $val}
-      default {error "unknown configuration name: $name"}
-    }
   }
 
   ############################

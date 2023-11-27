@@ -92,25 +92,6 @@ itcl::class device_role::base_interface {
 
   method get_device {} {return $dev}
 
-  # Get list of configuation options.
-  # Each entry contains a list of two values: {name} {type}
-  # types: <list>, string, bool, const
-  #
-  # Example:
-  # {{range  {1 2 5 10 20 50}}
-  #  {tconst {10ms 100ms 1s 10s}}
-  #  {autorange bool}
-  #  {status const}
-  # }
-  method conf_list {} {return {}}
-
-  # Get configuration option
-  method conf_get {name} { error "unknown configuration option: $name" }
-
-  # Set configuration option
-  method conf_set {name val} { error "unknown configuration option: $name" }
-
-
   ########
   # Make role- or device- specific Tk widget for controlling device.
   method make_widget {tkroot args} {}

@@ -161,34 +161,6 @@ itcl::class keysight {
     return [get]
   }
 
-
-  ############################
-  method conf_list {} {
-    return [list {
-      {auto_range} bool
-      {range}      string
-      {npl_cycles} {0.02 0.2 1 10 100 MIN MAX}
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      auto_range { return [Device2::ask $dev "$func:RANGE:AUTO?"]}
-      range      { return [expr {[Device2::ask $dev "$func:RANGE?"]}]}
-      npl_cycles { return [expr {[Device2::ask $dev "$func:NPLC?"]}]}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      auto_range { dev_set_par $dev "$func:RANGE:AUTO" $val}
-      range      { dev_set_par $dev "$func:RANGE" $val}
-      npl_cycles { dev_set_par $dev "$func:NPLC" $val}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
 }
 
 ######################################################################
@@ -1216,32 +1188,6 @@ itcl::class ah2500 {
       [Device2::ask $dev "SI"] X CV CU LV LU
     return "$CV $LV"
   }
-
-  method conf_list {} {
-    return [list {
-      volt    int
-      aver    {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15}
-      names   const
-    }]
-  }
-
-  method conf_get {name} {
-    switch -exact -- $name {
-      volt  { return [Device2::ask $dev "SH V"]}
-      aver  { return [Device2::ask $dev "SH AV"]}
-      names { return $names }
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
-  method conf_set {name val} {
-    switch -exact -- $name {
-      volt  { Device2::ask $dev volt "VO $val"}
-      aper  { Device2::ask $dev aper "AV $val"}
-      default {error "unknown configuration name: $name"}
-    }
-  }
-
 }
 
 ######################################################################

@@ -11,15 +11,3 @@ puts [$dev get]
 puts [$dev get]
 puts [$dev get]
 
-puts "autorange: [$dev conf_get autorange]"
-puts "autodelay: [$dev conf_get autodelay]"
-
-puts "delay: [$dev conf_get delay]"
-puts "range: [$dev conf_get range]"
-puts "nplc:  [$dev conf_get nplc]"
-
-# Turn autodlay off, set delay to 0.5s
-puts [$dev conf_set autodelay 1]
-puts [$dev conf_set delay 0.5]
-puts [$dev get]
-

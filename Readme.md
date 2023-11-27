@@ -47,29 +47,6 @@ more infomation):
 
 TODO: channel-specific locks.
 
-#### Configuration options
-
-Device-specific configuration options can be accessed
-via following interface:
-
-```tcl
-method get_conf_list {}
-method get_conf {name} {}
-method set_conf {name val} {}
-```
-
-`get_conf_list` method returns list of all configuation options
-available for this device. Each entry contains a list of following
-values: `{name} {type} {values}`
-
-* `name` is a name of the option
-* `type` is type of the option: `list`, `string`, `bool`
-* `values` is list of all values for list option,
-empty list for string option.
-
-Using these methods one can build a device-specfic
-configuration panel in the interface.
-
 #### Test devices
 
 Some roles have a TEST device which is not connected to any phisycal
