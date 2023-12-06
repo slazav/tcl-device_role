@@ -8,14 +8,14 @@ set _files {}
 lappend _files "$dir/role.tcl"
 lappend _files "$dir/d_keysight_gen.tcl"
 lappend _files "$dir/d_keysight_err.tcl"
-lappend _files "$dir/r_power_supply.tcl"
-lappend _files "$dir/r_noise_source.tcl"
-lappend _files "$dir/r_ac_source.tcl"
-lappend _files "$dir/r_dc_source.tcl"
-lappend _files "$dir/r_burst_source.tcl"
-lappend _files "$dir/r_gauge.tcl"
-lappend _files "$dir/r_lock-in.tcl"
-lappend _files "$dir/r_dgen.tcl"
+lappend _files [glob "$dir/r_power_supply/*.tcl"]
+lappend _files [glob "$dir/r_noise_source/*.tcl"]
+lappend _files [glob "$dir/r_ac_source/*.tcl"]
+lappend _files [glob "$dir/r_dc_source/*.tcl"
+lappend _files [glob "$dir/r_burst_source/*.tcl"
+lappend _files [glob "$dir/r_gauge/*.tcl"
+lappend _files [glob "$dir/r_lock-in/*.tcl"
+lappend _files [glob "$dir/r_dgen/*.tcl"
 
 set _pcmd {}
 foreach _f $_files { lappend _pcmd "source $_f" }

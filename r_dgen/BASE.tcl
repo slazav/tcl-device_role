@@ -1,15 +1,12 @@
 ######################################################################
-# 2-channel generator used for excitation and compenasation
+# dgen -- 2-channel generator used for excitation and compenasation
+# not used, not tested
 
 package require Itcl
-package require Device2
-
 namespace eval device_role::dgen {
 
-######################################################################
-## Interface class. All driver classes are children of it
-itcl::class interface {
-  inherit device_role::base_interface
+itcl::class base {
+  inherit device_role::base
 
   # Two DeviceRole objects, ac_sources.
   # Some interaction between them may be needed.
@@ -71,57 +68,4 @@ itcl::class interface {
 
 }
 
-######################################################################
-# TEST device. Does nothing.
-
-itcl::class TEST {
-  inherit interface
-  proc test_id {id} {}
-
-  constructor {d ch id} {
-    set dev_ac1 [DeviceRole TEST:1 ac_source]
-    set dev_ac2 [DeviceRole TEST:2 ac_source]
-  }
-}
-
-######################################################################
-# Use HP/Agilent/Keysight 1- and 2-channel generators as an ac_source.
-#
-# 2-channel devices (Use channels 1 or 2 to set output):
-# Agilent Technologies,33510B,MY52201807,3.05-1.19-2.00-52-00
-# Agilent Technologies,33522A,MY50005619,2.03-1.19-2.00-52-00
-
-itcl::class keysight {
-  inherit keysight_gen interface
-  proc test_id {id} { keysight_gen::test_id $id }
-
-  # we use Device from keysight_gen class
-  method get_device {} {return $keysight_gen::dev}
-
-  variable dev_ac1
-  variable dev_ac2
-
-  constructor {d ch id} {
-    # Get the model name from id (using test_id function).
-    # Only two-channel models are supported.
-    set model [test_id $id]
-    if {$model != {33510B} &&\
-        $model != {33522A}} {
-      error "device_role::dgen::keysight not a 2-channel model: $model" }
-
-    if {$ch != {}} {error "bad channel setting: $ch"}
-    set dev $d
-
-    set dev_ac1 [DeviceRole $dev:1 ac_source]
-    set dev_ac2 [DeviceRole $dev:2 ac_source]
-    # this is the only non-trivial setting:
-    dev_set_par $dev "FREQ:COUP" "1"
-  }
-
-  # Frequencies are coupled, only one should be set:
-  method set_freq {v}  { $dev_ac1 sel_freq $v}
-
-}
-
-######################################################################
-} # namespace
+}; # namespace

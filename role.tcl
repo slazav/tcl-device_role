@@ -80,7 +80,7 @@ proc DeviceRoleDelete {name} {
 
 ######################################################################
 ## Base interface class. All role interfaces are children of it
-itcl::class device_role::base_interface {
+itcl::class device_role::base {
   variable dev {}; ## Device handler (see Device library)
 
   # Drivers should provide constructor with "device" and "channel" parameters
