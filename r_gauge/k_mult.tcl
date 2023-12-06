@@ -36,8 +36,9 @@ itcl::class k_mult {
     return {}
   }
 
-  constructor {d ch id} {
-    switch -exact -- $ch {
+  constructor {args} {
+    chain {*}$args
+    switch -exact -- $dev_chan {
       DCV {  set func volt:dc }
       ACV {  set func volt:ac }
       DCI {  set func curr:dc }
@@ -45,20 +46,19 @@ itcl::class k_mult {
       R2  {  set func res     }
       R4  {  set func fres    }
       default {
-        error "$this: bad channel setting: $ch"
+        error "$this: bad channel setting: $dev_chan"
         return
       }
     }
-    set dev $d
-    set valnames $ch
-    dev_err_clear $dev
-    Device2::ask $dev "meas:$func?"
-    dev_err_check $dev
+    set valnames $dev_chan
+    dev_err_clear $dev_name
+    Device2::ask $dev_name "meas:$func?"
+    dev_err_check $dev_name
   }
 
   ############################
   method get {} {
-    return [Device2::ask $dev "read?"]
+    return [Device2::ask $dev_name "read?"]
   }
   method get_auto {} {
     return [get]

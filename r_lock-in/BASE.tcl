@@ -7,6 +7,7 @@ namespace eval device_role::lock-in {
 itcl::class base {
   inherit device_role::base
   proc test_id {id} {}
+  constructor {args} { chain {*}$args }
 
   ##################
   # variables to hold measured values (for interface)
@@ -24,7 +25,7 @@ itcl::class base {
   # the last operation.
   method get_status {} {return $status}; # Device status (text)
 
-  method get_device_info {} {return $dev}
+  method get_device_info {} {return $dev_info}
 
   ##################
   # Role-specific Tk widget.

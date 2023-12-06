@@ -13,7 +13,8 @@ itcl::class TEST {
   variable offs
   variable ph
 
-  constructor {d ch id} {
+  constructor {args} {
+    chain {*}$args
     set fre 1000
     set amp 0.1
     set cyc 10

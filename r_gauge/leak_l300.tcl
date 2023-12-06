@@ -12,19 +12,16 @@ itcl::class leak_l300 {
     return {}
   }
 
-  variable chan;  # channel to use
-
-  constructor {d ch id} {
-    # channels are not supported now
+  constructor {args} {
+    chain {*}$args
     set valnames [list "Leak" "Pin"]
-    set dev $d
   }
 
   ############################
   method get {} {
     # inlet pressure, measurement (calibrated)
-    set pin   [Device2::ask $dev "*meas:p1:mbar?"]
-    set leak  [Device2::ask $dev "*read:mbar*l/s?"]
+    set pin   [Device2::ask $dev_name "*meas:p1:mbar?"]
+    set leak  [Device2::ask $dev_name "*read:mbar*l/s?"]
     return [list $leak $pin]
   }
   method get_auto {} { return [get] }

@@ -9,8 +9,8 @@ itcl::class TEST {
   proc test_id {id} {}
   variable onoff
 
-  constructor {d ch id args} {
-    set dev $d
+  constructor {args} {
+    chain {*}$args
     set freq 1000
     set volt 0.1
     set offs  0

@@ -12,12 +12,9 @@ itcl::class leak_asm340 {
     return {}
   }
 
-  variable chan;  # channel to use
-
-  constructor {d ch id} {
-    # channels are not supported now
+  constructor {args} {
+    chain {*}$args
     set valnames [list "Leak" "Pin"]
-    set dev $d
   }
 
   # convert numbers received from the leak detector:
@@ -30,8 +27,8 @@ itcl::class leak_asm340 {
   ############################
   method get {} {
     # inlet pressure, measurement (calibrated)
-    set pin   [conv_number [Device2::ask $dev ?PE]]
-    set leak  [conv_number [Device2::ask $dev ?LE2]]
+    set pin   [conv_number [Device2::ask $dev_name ?PE]]
+    set leak  [conv_number [Device2::ask $dev_name ?LE2]]
     return [list $leak $pin]
   }
   method get_auto {} { return [get] }

@@ -20,55 +20,53 @@ namespace eval device_role::dc_source {
 itcl::class keythley_sm2400 {
   inherit base
   proc test_id {id} {
-    if {[regexp {,MODEL 2400,} $id]} {return 1}
+    if {[regexp {,MODEL 2400,} $id]} {return 2400}
   }
 
-  variable chan;  # channel to use (1..2)
-  constructor {d ch id} {
-    switch -exact -- $ch {
+  constructor {args} {
+    chain {*}$args
+    switch -exact -- $dev_chan {
       DCV {  set cmd ":sour:func volt"; set cmd "sour:volt:range:auto on" }
       DCI {  set cmd ":sour:func curr"; set cmd "sour:curr:range:auto on" }
       default {
-        error "$this: bad channel setting: $ch"
+        error "$this: bad channel setting: $dev_chan"
         return
       }
     }
-    set chan $ch
-    set dev $d
   }
   method set_volt {val} {
-    Device2::ask $dev ":sour:volt:lev $val"
+    Device2::ask $dev_name ":sour:volt:lev $val"
   }
   method set_curr {val} {
-    Device2::ask $dev ":sour:curr:lev $val"
+    Device2::ask $dev_name ":sour:curr:lev $val"
   }
 
   method set_volt_range {val} {
-    Device2::ask $dev ":sour:volt:range $val"
+    Device2::ask $dev_name ":sour:volt:range $val"
   }
   method set_curr_range {val} {
-    Device2::ask $dev ":sour:curr:range $val"
+    Device2::ask $dev_name ":sour:curr:range $val"
   }
 
   method get_volt {} {
-    Device2::ask $dev ":sour:volt:lev?"
+    Device2::ask $dev_name ":sour:volt:lev?"
   }
   method get_curr {} {
-    Device2::ask $dev ":sour:curr:lev?"
+    Device2::ask $dev_name ":sour:curr:lev?"
   }
 
   method get_volt_range {} {
-    Device2::ask $dev ":sour:volt:range?"
+    Device2::ask $dev_name ":sour:volt:range?"
   }
   method get_curr_range {} {
-    Device2::ask $dev ":sour:curr:range?"
+    Device2::ask $dev_name ":sour:curr:range?"
   }
 
   method on {} {
-    Device2::ask $dev ":outp on"
+    Device2::ask $dev_name ":outp on"
   }
   method off {} {
-    Device2::ask $dev ":outp off"
+    Device2::ask $dev_name ":outp off"
   }
 }
 

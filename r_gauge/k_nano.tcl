@@ -19,22 +19,22 @@ itcl::class k_nano {
     return {}
   }
 
-  constructor {d ch id} {
-    switch -exact -- $ch {
+  constructor {args} {
+    chain {*}$args
+    switch -exact -- $dev_chan {
       DCV1 { set chan 1 }
       DCV2 { set chan 2 }
-      default { error "$this: bad channel setting: $ch" }
+      default { error "$this: bad channel setting: $dev_chan" }
     }
-    set dev $d
-    dev_check $dev "conf:volt:DC"
-    dev_check $dev "sens:chan $chan"
-    dev_check $dev "sens:volt:rang:auto 1"
-    dev_check $dev "samp:count 1"
+    dev_check $dev_name "conf:volt:DC"
+    dev_check $dev_name "sens:chan $dev_chan"
+    dev_check $dev_name "sens:volt:rang:auto 1"
+    dev_check $dev_name "samp:count 1"
   }
 
   ############################
   method get {} {
-    return [Device2::ask $dev "read?"]
+    return [Device2::ask $dev_name "read?"]
   }
   method get_auto {} {
     return [get]

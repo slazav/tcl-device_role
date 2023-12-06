@@ -11,9 +11,10 @@ itcl::class siglent {
   inherit ::device_role::power_supply::siglent
   proc test_id {id} {::device_role::power_supply::siglent::test_id $id}
   # we use Device from $base class
-  method get_device {} {return ${base}::dev}
+  method get_device {} {return $dev_name}
 
-  constructor {d ch id} {${base}::constructor $d $ch $id} {
+  constructor {args} {
+    chain {*}$args
     # set max current
     ${base}::set_curr $max_i
   }

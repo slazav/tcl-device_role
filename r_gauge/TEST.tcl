@@ -8,23 +8,22 @@ itcl::class TEST {
   inherit base
   proc test_id {id} {}
 
-  variable chan;  # channel to use (R1, R2,... T1, T2,...)
   variable type;  # R - random, T - 10s time sweep
   variable n;     # number of values 0..maxn
   variable maxn 10;
   variable tsweep 10;
 
-  constructor {d ch id} {
-    set chan $ch
+  constructor {args} {
+    chain {*}$args
     set type R
     set n    1
-    if {$ch == {}} {
+    if {$dev_chan == {}} {
     }
-    if {$ch!={} && ![regexp {^(T|R)([0-9]+$)} $chan v type n]} {
-      error "Unknown channel setting: $ch"
+    if {$dev_chan!={} && ![regexp {^(T|R)([0-9]+$)} $dev_chan v type n]} {
+      error "Unknown channel setting: $dev_chan"
     }
     if {$n<1 || $n>$maxn} {
-      error "Bad number in the cannel setting: $ch"
+      error "Bad number in the cannel setting: $dev_chan"
     }
     for {set i 0} {$i<$n} {incr i} {lappend valnames $i}
   }

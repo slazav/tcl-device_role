@@ -17,7 +17,6 @@ namespace eval device_role::power_supply {
 
 itcl::class tenma {
   inherit base
-  protected variable dev;
   protected variable model;
   public variable min_i;
   public variable min_v;
@@ -43,16 +42,15 @@ itcl::class tenma {
     if {[regexp {S-LS-31 V2.0}           $id]} {return {72-2550}}; # Stamos Soldering S-LS-31
   }
 
-  constructor {d ch id} {
-    if {$ch!={}} {error "channels are not supported for the device $d"}
-    set model [test_id $id]
-    switch -exact -- $model {
+  constructor {args} {
+    chain {*}$args
+    if {$dev_chan!={}} {error "channels are not supported for the device: $dev_name"}
+    switch -exact -- $dev_model {
       72-2550 { set max_i 3.09; set max_v 60.0 }
       72-2540 { set max_i 5.09; set max_v 31.0 }
       72-2535 { set max_i 3.09; set max_v 31.0 }
-      default { error "tenma_ps: unknown model: $model" }
+      default { error "tenma_ps: unknown model: $dev_model" }
     }
-    set dev $d
     set min_i 0.0
     set min_v 0.0
     set min_i_step 0.001
@@ -62,47 +60,47 @@ itcl::class tenma {
 
   method set_volt {val} {
     set val [expr {round($val*100)/100.0}]
-    Device2::ask $dev "VSET1:$val"
+    Device2::ask $dev_name "VSET1:$val"
   }
   method set_curr {val} {
     set val [expr {round($val*1000)/1000.0}]
-    Device2::ask $dev "ISET1:$val"
+    Device2::ask $dev_name "ISET1:$val"
   }
   method set_ovp  {val} {
     set_volt $val
-    Device2::ask $dev "OVP1"
+    Device2::ask $dev_name "OVP1"
   }
   method set_ocp  {val} {
     set_curr $val
-    Device2::ask $dev "OCP1"
+    Device2::ask $dev_name "OCP1"
   }
-  method get_curr {} { return [Device2::ask $dev "IOUT1?"] }
-  method get_volt {} { return [Device2::ask $dev "VOUT1?"] }
+  method get_curr {} { return [Device2::ask $dev_name "IOUT1?"] }
+  method get_volt {} { return [Device2::ask $dev_name "VOUT1?"] }
 
   method cc_reset {} {
     ## set current to actual current, turn output on
-    set c [Device2::ask $dev "IOUT1?"]
-    Device2::ask $dev "ISET1:$c"
-    Device2::ask $dev "BEEP1"; # beep off
-    Device2::ask $dev "OUT1"
+    set c [Device2::ask $dev_name "IOUT1?"]
+    Device2::ask $dev_name "ISET1:$c"
+    Device2::ask $dev_name "BEEP1"; # beep off
+    Device2::ask $dev_name "OUT1"
   }
 
   method cv_reset {} {
     ## set voltage to actual value, turn output on
-    set c [Device2::ask $dev "VOUT1?"]
-    Device2::ask $dev "VSET1:$c"
-    Device2::ask $dev "BEEP1"; # beep off
-    Device2::ask $dev "OUT1"
+    set c [Device2::ask $dev_name "VOUT1?"]
+    Device2::ask $dev_name "VSET1:$c"
+    Device2::ask $dev_name "BEEP1"; # beep off
+    Device2::ask $dev_name "OUT1"
   }
 
   method off {} {
     # turn output off
-    Device2::ask $dev "OUT0"
+    Device2::ask $dev_name "OUT0"
   }
 
   method on {} {
     # turn output on
-    Device2::ask $dev "OUT1"
+    Device2::ask $dev_name "OUT1"
   }
 
   ##
@@ -134,7 +132,7 @@ itcl::class tenma {
   # OVP trig   10010001 145 145 145
 
   method get_stat {} {
-    set n [Device2::ask $dev "STATUS?"]
+    set n [Device2::ask $dev_name "STATUS?"]
     binary scan $n c nv;          # convert char -> 8-bit integer
     set nv [expr { $nv & 0xFF }]; # convert to unsigned
     if {($nv&(1<<6)) == 0} {return "OFF"}

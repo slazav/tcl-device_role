@@ -7,6 +7,7 @@ namespace eval device_role::ac_source {
 itcl::class base {
   inherit device_role::base
   proc test_id {id} {}
+  constructor {args} { chain {*}$args }
 
   # variables which should be filled by driver:
   public variable max_v; # max voltage
@@ -44,7 +45,7 @@ itcl::class base {
   method set_phase {v} {set phase $v}
   method set_out {v}   {set out [expr {$v?1:0}]}; # turn output on/off (without affecting other set/get commands)
 
-  method get_device_info {} {return $dev}
+  method get_device_info {} {return $dev_info}
 
   # Non-zero AC shift. I use it to implement self-compensation
   # when using with Femto lock-ins + input transformers. 

@@ -39,18 +39,16 @@ itcl::class lsci370 {
     if {[regexp {LSCI,MODEL370} $id]} {return 1}
   }
 
-  variable chan;  # channel to use (1..2)
   variable res; # heater resistance
   variable rng; # heater curent range, A
   variable output; # H 1 2
   variable bipolar; # 0 1
 
-  constructor {d ch id} {
-
-    set dev $d
+  constructor {args} {
+    chain {*}$args
 
     ## Heater output
-    if {[regexp {^HTR([1-8]):([0-9e.]+)$} $ch v rng_num res]} {
+    if {[regexp {^HTR([1-8]):([0-9e.]+)$} $dev_chan v rng_num res]} {
 
       switch -exact -- $rng_num {
         1 {set rng 3.16e-5}
@@ -67,27 +65,27 @@ itcl::class lsci370 {
       set max_v [expr $rng*$res]
       set min_v_step [expr 1e-5*$max_v]
 
-      Device2::ask $dev HTRRNG $rng_num
-      Device2::ask $dev CMODE  3
+      Device2::ask $dev_name HTRRNG $rng_num
+      Device2::ask $dev_name CMODE  3
       return
     }
 
     ## Analog output
-    if {[regexp {^ANALOG([12])([ub])$} $ch v output bipolar]} {
+    if {[regexp {^ANALOG([12])([ub])$} $dev_chan v output bipolar]} {
       set bipolar [expr {$bipolar == "u" ? 0:1}]
 
       set min_v [expr $bipolar? -10:0]
       set max_v 10.0
       set min_v_step [expr 1e-5*$max_v]
-      set ret [Device2::ask $dev "ANALOG? $output"]
+      set ret [Device2::ask $dev_name "ANALOG? $output"]
       set ret [split $ret ","]
       lset ret 0 $bipolar
       lset ret 1 2
-      Device2::ask $dev "ANALOG $output,[join $ret {,}]"
+      Device2::ask $dev_name "ANALOG $output,[join $ret {,}]"
       return
     }
 
-    error "$this: bad channel setting: $ch"
+    error "$this: bad channel setting: $dev_chan"
 
   }
 
@@ -97,17 +95,17 @@ itcl::class lsci370 {
       set v [expr 100*$volt/$max_v]
       if {$v > 100} {set v 100}
       if {$v < 0} {set v 0}
-      Device2::ask $dev "MOUT $v"
+      Device2::ask $dev_name "MOUT $v"
     }\
     else {
       set v [expr 100.0*$volt/$max_v]
       if {$v > 100} {set v 100}
       if {$v < -100} {set v -100}
       if {!$bipolar && $v < 0} {set v 0}
-      set ret [Device2::ask $dev "ANALOG? $output"]
+      set ret [Device2::ask $dev_name "ANALOG? $output"]
       set ret [split $ret ","]
       lset ret 6 $v
-      Device2::ask $dev "ANALOG $output,[join $ret {,}]"
+      Device2::ask $dev_name "ANALOG $output,[join $ret {,}]"
 
     }
   }
@@ -118,11 +116,11 @@ itcl::class lsci370 {
 
   method get_volt {} {
     if {$output == {H}} {
-      set v [Device2::ask $dev "MOUT?"]
+      set v [Device2::ask $dev_name "MOUT?"]
       return [expr $v*$max_v/100.0]
     }\
     else {
-      set ret [Device2::ask $dev "ANALOG? $output"]
+      set ret [Device2::ask $dev_name "ANALOG? $output"]
       set ret [split $ret ","]
       set v [lindex $ret 6]
       return [expr $v*$max_v/100.0]

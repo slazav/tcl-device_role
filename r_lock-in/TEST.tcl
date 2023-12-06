@@ -8,11 +8,10 @@ itcl::class TEST {
   inherit base
   proc test_id {id} {}
 
-  constructor {d ch id args} {
-    set dev "TEST"
+  constructor {args} {
+    chain {*}$args
     set M 1
   }
-  destructor {}
 
   ############################
   method get {} {

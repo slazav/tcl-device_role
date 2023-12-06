@@ -56,7 +56,9 @@ itcl::class picoscope {
   common sigfile
   common status
 
-  constructor {d ch id} {
+  constructor {args} {
+    chain {*}$args
+    set ch $dev_chan
 
     set osc_meas {}
     if {[regexp {^DC(\(([A-D]+)\))?$} $ch v0 v1 v2]} {
@@ -93,10 +95,8 @@ itcl::class picoscope {
     }
     if {$osc_meas == {}} { error "$this: bad channel setting: $ch" }
 
-    set dev $d
-
     # oscilloscope ranges
-    set ranges [lindex [split [Device2::ask $dev ranges A] "\n"] 0]
+    set ranges [lindex [split [Device2::ask $dev_name ranges A] "\n"] 0]
     if {[llength $ranges]==1} {set ranges {*}$ranges}
     set range [get_range]
     if { $range == "undef" } {set range 1.0}
@@ -114,14 +114,14 @@ itcl::class picoscope {
     # oscilloscope setup (pairs of channels: signal+reference)
     if {$osc_meas=="lockin"} {
       foreach {c1 c2} $osc_ch {
-        Device2::ask $dev chan_set $c1 1 AC $range
-        if {$c1 != $c2} { Device2::ask $dev chan_set $c2 1 AC $range_ref }
+        Device2::ask $dev_name chan_set $c1 1 AC $range
+        if {$c1 != $c2} { Device2::ask $dev_name chan_set $c2 1 AC $range_ref }
         }
     }
     if {$osc_meas=="DC"} {
         # oscilloscope setup
         foreach ch $osc_ch {
-          Device2::ask $dev chan_set $ch 1 DC $range
+          Device2::ask $dev_name chan_set $ch 1 DC $range
         }
     }
   }
@@ -148,14 +148,14 @@ itcl::class picoscope {
       set dt [expr $tconst/$npt]
       set justinc 0; # avoid inc->dec loops
       while {1} {
-        Device2::ask $dev trig_set NONE 0.1 FALLING 0
+        Device2::ask $dev_name trig_set NONE 0.1 FALLING 0
         # record signal
-        Device2::ask $dev block $osc_ach 0 $npt $dt $sigfile
+        Device2::ask $dev_name block $osc_ach 0 $npt $dt $sigfile
 
         # check for overload (any signal channel)
         set ovl 0
         foreach {c1 c2} $osc_ch {
-          if {[Device2::ask $dev filter -c $osc_nch($c1) -f overload $sigfile]} {set ovl 1}
+          if {[Device2::ask $dev_name filter -c $osc_nch($c1) -f overload $sigfile]} {set ovl 1}
         }
 
         # try to increase the range and repeat
@@ -170,7 +170,7 @@ itcl::class picoscope {
         set max_amp 0
         set ret {}
         foreach {c1 c2} $osc_ch {
-          set v [Device2::ask $dev filter -f lockin -c $osc_nch($c1),$osc_nch($c2) $sigfile]
+          set v [Device2::ask $dev_name filter -f lockin -c $osc_nch($c1),$osc_nch($c2) $sigfile]
           if {[llength $v] == 1} {set v [lindex $v 0]}
 
           set v [lindex [split $v "\n"] 0]
@@ -210,14 +210,14 @@ itcl::class picoscope {
       set justinc 0; # avoid inc->dec loops
 
       while {1} {
-        Device2::ask $dev trig_set NONE 0.1 FALLING 0
+        Device2::ask $dev_name trig_set NONE 0.1 FALLING 0
         # record signal
-        Device2::ask $dev block $osc_ach 0 $npt $dt $sigfile
+        Device2::ask $dev_name block $osc_ach 0 $npt $dt $sigfile
 
         # check for overload
         set ovl 0
         foreach ch $osc_ch {
-          if {[Device2::ask $dev filter -c $osc_nch($ch) -f overload $sigfile]} {set ovl 1}
+          if {[Device2::ask $dev_name filter -c $osc_nch($ch) -f overload $sigfile]} {set ovl 1}
         }
 
         # try to increase the range and repeat
@@ -234,7 +234,7 @@ itcl::class picoscope {
           lappend nch $osc_nch($ch)
         }
         set nch [join $nch {,}]
-        set ret [Device2::ask $dev filter -c $nch -f dc $sigfile]
+        set ret [Device2::ask $dev_name filter -c $nch -f dc $sigfile]
 
         # if it is still overloaded
         if {$ovl == 1} {
@@ -276,7 +276,7 @@ itcl::class picoscope {
   }
   method get_range {} {
     set c [lindex $osc_ch 0]
-    set res [Device2::ask $dev chan_get $c]
+    set res [Device2::ask $dev_name chan_get $c]
     if {[llength $res] == 1} {set res [lindex $res 0]}
     set ch_cnf [lindex [split $res "\n"] 0]
     return [lindex $ch_cnf end]

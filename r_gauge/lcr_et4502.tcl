@@ -19,8 +19,9 @@ itcl::class lcr_et4502 {
     return {}
   }
 
-  constructor {d ch id} {
-    set c [split $ch {-}]
+  constructor {args} {
+    chain {*}$args
+    set c [split $dev_chan {-}]
     if {[llength $c] == 0} {
       set A "C"
       set B "Q"
@@ -36,21 +37,20 @@ itcl::class lcr_et4502 {
       }
     }\
     else {
-      error "lcr_et4502: bad channel setting: $ch"
+      error "lcr_et4502: bad channel setting: $dev_chan"
     }
     set names [list $A $B]
-    set dev $d
-    Device2::ask $dev FUNC:DEV:MODE OFF
-    Device2::ask $dev FUNC:IMP:A $A
-    Device2::ask $dev FUNC:IMP:B $B
-    Device2::ask $dev FUNC:IMP:RANG:AUTO ON
-    Device2::ask $dev FUNC:IMP:EQU SER
+    Device2::ask $dev_name FUNC:DEV:MODE OFF
+    Device2::ask $dev_name FUNC:IMP:A $A
+    Device2::ask $dev_name FUNC:IMP:B $B
+    Device2::ask $dev_name FUNC:IMP:RANG:AUTO ON
+    Device2::ask $dev_name FUNC:IMP:EQU SER
     after 100
   }
 
   ############################
   method get {} {
-    return [join [split [Device2::ask $dev fetch?] {,}]]
+    return [join [split [Device2::ask $dev_name fetch?] {,}]]
   }
 }
 

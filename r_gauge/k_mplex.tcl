@@ -29,9 +29,9 @@ itcl::class k_mplex {
 
   variable cmds {};  # list of measurement commands
 
-  constructor {d ch id} {
-    set dev $d
-    foreach c [split $ch { +}] {
+  constructor {args} {
+    chain {*}$args
+    foreach c [split $dev_chan { +}] {
       if {[regexp {^([A-Z0-9]+)\(([0-9:,]+)\)$} $c v0 vmeas vch]} {
 
         # Add measurement commend for a group of channels:
@@ -72,9 +72,9 @@ itcl::class k_mplex {
   method get {} {
     set ret {}
     foreach c $cmds {
-      dev_err_clear $dev
-      set ret [concat $ret [split [Device2::ask $dev $c] {,}]]
-      dev_err_check $dev
+      dev_err_clear $dev_name
+      set ret [concat $ret [split [Device2::ask $dev_name $c] {,}]]
+      dev_err_check $dev_name
     }
     return $ret
   }

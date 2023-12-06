@@ -23,10 +23,6 @@ itcl::class siglent {
     if {[regexp {,SPD3303C,} $id]} {return {SPD3303C}}
   }
 
-  protected variable dev;
-  protected variable chan;
-  protected variable model;
-
   public variable min_i;
   public variable min_v;
   public variable max_i;
@@ -35,53 +31,52 @@ itcl::class siglent {
   public variable min_v_step;
   public variable i_prec 0.02;
 
-  constructor {d ch id} {
-    set dev $d
-    set model [test_id $id]
+  constructor {args} {
+    chain {*}$args
     set min_i 0
     set min_v 0
-    set chan 1
-    if {$model eq {SPD1168X}} {
+    if {$dev_model eq {SPD1168X}} {
       set max_i 8
       set max_v 16
       set min_v_step 0.001
       set min_i_step 0.001
-      if {$ch ne {}} {
-        error "$this: bad channel setting: $ch"
+      if {$dev_chan ne {}} {
+        error "$this: bad channel setting: $dev_chan"
         return
       }
+      set chan 1
     }\
-    elseif {$model eq {SPD1305X}} {
+    elseif {$dev_model eq {SPD1305X}} {
       set max_i 5
       set max_v 30
       set min_v_step 0.001
       set min_i_step 0.001
-      if {$ch ne {}} {
-        error "$this: bad channel setting: $ch"
+      if {$dev_chan ne {}} {
+        error "$this: bad channel setting: $dev_chan"
         return
       }
+      set chan 1
     }\
-    elseif {$model eq {SPD3303C}} {
+    elseif {$dev_model eq {SPD3303C}} {
       set max_i 3.2
       set max_v 32
       set min_v_step 0.01
       set min_i_step 0.01
-      if {$ch !=1 && $ch!=2} {
-        error "$this: bad channel setting: $ch"
+      if {$dev_chan !=1 && $dev_chan!=2} {
+        error "$this: bad channel setting: $dev_chan"
         return
       }
-      set chan $ch
     }\
-    else {error "Unknown model: $model"}
+    else {error "Unknown model: $dev_model"}
 
   }
 
-  method set_volt {val} { Device2::ask $dev "CH$chan:VOLT $val" }
-  method set_curr {val} { Device2::ask $dev "CH$chan:CURR $val" }
-  method get_volt {} { Device2::ask $dev "MEAS:VOLT? CH$chan" }
-  method get_curr {} { Device2::ask $dev "MEAS:CURR? CH$chan" }
-  method on  {} { Device2::ask $dev "OUTP CH$chan,ON" }
-  method off {} { Device2::ask $dev "OUTP CH$chan,OFF" }
+  method set_volt {val} { Device2::ask $dev_name "CH$dev_chan:VOLT $val" }
+  method set_curr {val} { Device2::ask $dev_name "CH$dev_chan:CURR $val" }
+  method get_volt {} { Device2::ask $dev_name "MEAS:VOLT? CH$dev_chan" }
+  method get_curr {} { Device2::ask $dev_name "MEAS:CURR? CH$dev_chan" }
+  method on  {} { Device2::ask $dev_name "OUTP CH$dev_chan,ON" }
+  method off {} { Device2::ask $dev_name "OUTP CH$dev_chan,OFF" }
 
   ## Set current to actual current, turn output on.
   ## For Siglent devices switching from V0-OFF to 0-ON
@@ -119,10 +114,10 @@ itcl::class siglent {
   # 5    0: CH2 OFF      1: CH2 ON
   method get_stat {} {
     # status bits
-    set ccbit [expr $chan-1]
-    set onbit [expr $chan+3]
+    set ccbit [expr $dev_chan-1]
+    set onbit [expr $dev_chan+3]
     # get status from the device
-    set n [Device2::ask $dev "SYST:STAT?"]
+    set n [Device2::ask $dev_name "SYST:STAT?"]
     scan $n 0x%x n;  # hex->num
     set n [expr { $n & 0xFFFF }]; # convert to unsigned
     if {($n&(1<<$onbit)) == 0} {return "OFF"}

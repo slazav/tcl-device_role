@@ -55,8 +55,8 @@ itcl::class femto_pico {
 
 
   ##########################
-  constructor {d ch id args} {
-    set dev $d
+  constructor {args} {
+    chain {*}$args
     # Parse options.
     set options [list \
       {-x -chan_x}   chan_x   1\
@@ -76,9 +76,9 @@ itcl::class femto_pico {
 
     # If channel is not empty, it should contain channel numbers: <n1>,<n2>
     # This overrides -x and -y settings.
-    if {$ch != {}} {
-      set xy [split $ch ","]
-      if {[llength $xy] != 2} { error "bad channel setting: $ch"}
+    if {$dev_chan != {}} {
+      set xy [split $dev_chan ","]
+      if {[llength $xy] != 2} { error "bad channel setting: $dev_chan"}
       set chan_x [lindex $xy 0]
       set chan_y [lindex $xy 1]
     }
@@ -87,8 +87,8 @@ itcl::class femto_pico {
       error "can't set differential mode for even-numbered channels: $chan_x,$chan_y"
     }
 
-    set ranges [Device2::ask $dev ranges]
-    set tconvs [Device2::ask $dev tconvs]
+    set ranges [Device2::ask $dev_name ranges]
+    set tconvs [Device2::ask $dev_name tconvs]
 
     if {$femto_s1} {
       # ranges in Ultra stable/Low Drift mode (S1 = ON, low dynamic resolution)
@@ -232,8 +232,8 @@ itcl::class femto_pico {
   method get {} {
 
     # get values
-    set X [Device2::ask $dev get_val $chan_x $single $range $tconv]
-    set Y [Device2::ask $dev get_val $chan_y $single $range $tconv]
+    set X [Device2::ask $dev_name get_val $chan_x $single $range $tconv]
+    set Y [Device2::ask $dev_name get_val $chan_y $single $range $tconv]
     set M [expr $range/1e3]
 
     if {abs($X)>=$M || abs($Y)>=$M} {set status "ADC OVERLOAD"}\

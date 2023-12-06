@@ -7,6 +7,7 @@ namespace eval device_role::gauge {
 itcl::class base {
   inherit device_role::base
   proc test_id {id} {}
+  constructor {args} { chain {*}$args }
 
 
   ##################

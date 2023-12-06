@@ -12,13 +12,13 @@ itcl::class leak_pf {
     if {[regexp {Pfeiffer HLT 2} $id]} {return 1}
   }
 
-  constructor {d ch id} {
-    set dev $d
+  constructor {args} {
+    chain {*}$args
   }
 
   ############################
   method get {} {
-    set ret [Device2::ask $dev "leak?"]
+    set ret [Device2::ask $dev_name "leak?"]
     return $ret
   }
   method get_auto {} { return [get] }

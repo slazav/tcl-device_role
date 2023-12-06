@@ -15,8 +15,8 @@ itcl::class TEST {
   variable OCP 0
   variable mode OFF
 
-  constructor {d ch id} {
-    set dev {}
+  constructor {args} {
+    chain {*}$args
     set max_i 3.09
     set min_i 0.0
     set max_v 60.0

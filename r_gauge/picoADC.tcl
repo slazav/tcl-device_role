@@ -48,9 +48,9 @@ itcl::class picoADC {
   common range 2500; # range
   common convt  180; # conversion time
 
-  constructor {d ch id} {
-
-    set dev $d
+  constructor {args} {
+    chain {*}$args
+    set ch $dev_chan
 
     # V3 Single-channel mode: device:1s
     # Here only channel number and single/differential mode is set.
@@ -114,11 +114,11 @@ itcl::class picoADC {
 
       # set ADC channels
       foreach c $adc_uch {
-        Device2::ask $dev chan_set [format "%02d" $c] 1 $single_($c) $range_($c)
+        Device2::ask $dev_name chan_set [format "%02d" $c] 1 $single_($c) $range_($c)
       }
       # set ADC time intervals.
       set dt [expr [llength $adc_uch]*$convt+100]
-      Device2::ask $dev set_t $dt $convt
+      Device2::ask $dev_name set_t $dt $convt
     }
   }
 
@@ -128,7 +128,7 @@ itcl::class picoADC {
     if {$chan == {}} {
       array unset ures
       array unset ares
-      set uvals [Device2::ask $dev get]
+      set uvals [Device2::ask $dev_name get]
       foreach v $uvals ch $adc_uch {
         set ures($ch) $v
       }
@@ -139,14 +139,14 @@ itcl::class picoADC {
 
     # V3 mode:
     } else {
-      return [Device2::ask $dev get_val $chan $sngl $range $convt]
+      return [Device2::ask $dev_name get_val $chan $sngl $range $convt]
     }
   }
   method get_auto {} { return [get 1] }
 
   ############################
-  method list_ranges  {} {return [Device2::ask $dev ranges]}
-  method list_tconsts {} {return [Device2::ask $dev tconvs]}
+  method list_ranges  {} {return [Device2::ask $dev_name ranges]}
+  method list_tconsts {} {return [Device2::ask $dev_name tconvs]}
   method set_range  {val} {set range $val}
   method set_tconst {val} {set convt $val}
   method get_range  {} {return $range}

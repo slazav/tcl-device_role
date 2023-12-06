@@ -16,24 +16,21 @@ itcl::class sr844 {
     if {[regexp {,SR844,} $id]} {return 1}
   }
 
-  variable chan;  # channel to use (1..2)
-  constructor {d ch id} {
-    if {$ch!=1 && $ch!=2} {
-      error "$this: bad channel setting: $ch"}
-    set chan $ch
-
-    set dev $d
+  constructor {args} {
+    chain {*}$args
+    if {$dev_chan!=1 && $dev_chan!=2} {
+      error "$this: bad channel setting: $dev_chan"}
     set max_v +10.5
     set min_v -10.5
     set min_v_step 0.001
   }
   method set_volt {val} {
-    Device2::ask $dev "AUXO${chan},$val"
+    Device2::ask $dev_name "AUXO${dev_chan},$val"
   }
   method off {} {
     set_volt 0
   }
-  method get_volt {} { return [Device2::ask $dev "AUXO?${chan}"] }
+  method get_volt {} { return [Device2::ask $dev_name "AUXO?${dev_chan}"] }
 }
 
 }; # namespace

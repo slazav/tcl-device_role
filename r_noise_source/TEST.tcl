@@ -12,7 +12,8 @@ itcl::class TEST {
   variable offs
   variable onoff
 
-  constructor {d ch id} {
+  constructor {args} {
+    chain {*}$args
     set volt 0
     set bw 1000
     set offs 0

@@ -7,6 +7,7 @@ namespace eval device_role::burst_source {
 itcl::class base {
   inherit device_role::base
   proc test_id {id} {}
+  constructor {args} { chain {*}$args }
 
   # variables which should be filled by driver:
   public variable max_v; # max voltage

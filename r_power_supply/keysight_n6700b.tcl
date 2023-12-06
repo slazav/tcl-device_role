@@ -30,17 +30,16 @@ itcl::class keysight_n6700b {
     if {[regexp {,N6700C,} $id]} {return 1}
   }
 
-  variable chan;  # channel to use (1..4)
   variable range; # range to use (H/L)
   variable sw_pos; # positive and negative pins of the polarity
   variable sw_neg; #   switch: 2..7 or 0 if no polarity switch used
                    #   pin 1 used for voltage check
 
-  constructor {d ch id} {
-    set dev $d
+  constructor {args} {
+    chain {*}$args
     # parse channel name, range (H/L) and polarity pins (:P45):
-    if {![regexp {([0-4])([HL]?)(:P([2-7])([2-7]))?} $ch x chan range p0 sw_pos sw_neg]} {
-      error "$this: bad channel setting: $ch"}
+    if {![regexp {([0-4])([HL]?)(:P([2-7])([2-7]))?} $chan x chan range p0 sw_pos sw_neg]} {
+      error "$this: bad channel setting: $chan"}
 
     # sw_pos = sw_neg = 0 -- no polarity switch
     if {$sw_pos != {} && $sw_pos == $sw_neg} {

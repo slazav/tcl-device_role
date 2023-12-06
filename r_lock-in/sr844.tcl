@@ -25,8 +25,8 @@ itcl::class sr844 {
   common tconsts   {1e-4 3e-4 1e-3 3e-3 1e-2 3e-2
                     0.1 0.3 1.0 3.0 10.0 30.0 1e2 3e3 1e3 3e3 1e4 3e4}
 
-  constructor {d ch id args} {
-    set dev $d
+  constructor {args} {
+    chain {*}$args
     get_range
     get_tconst
     get
@@ -53,7 +53,7 @@ itcl::class sr844 {
 
   ############################
   method get {} {
-    set r [split [Device2::ask $dev SNAP?1,2]  ","]
+    set r [split [Device2::ask $dev_name SNAP?1,2]  ","]
     set X [lindex $r 0]
     set Y [lindex $r 1]
     get_status
@@ -75,29 +75,29 @@ itcl::class sr844 {
     if {$val != {}} {set M $val}
     set n [lsearch -real -exact $ranges $M]
     if {$n<0} {error "unknown range setting: $M"}
-    Device2::ask $dev "SENS $n"
+    Device2::ask $dev_name "SENS $n"
   }
   method set_tconst {{val {}}} {
     if {$val != {}} {set T $val}
     set n [lsearch -real -exact $tconsts $T]
     if {$n<0} {error "unknown time constant setting: $T"}
-    Device2::ask $dev "OFLT $n"
+    Device2::ask $dev_name "OFLT $n"
   }
 
   ############################
   method get_range  {} {
     set ranges [list_ranges]
-    set n [Device2::ask $dev "SENS?"]
+    set n [Device2::ask $dev_name "SENS?"]
     set M [lindex $ranges $n]
     return $M
   }
   method get_tconst {} {
-    set n [Device2::ask $dev "OFLT?"]
+    set n [Device2::ask $dev_name "OFLT?"]
     set T [lindex $tconsts $n]
     return $T
   }
   method get_status {} {
-    set s [Device2::ask $dev "LIAS?"]
+    set s [Device2::ask $dev_name "LIAS?"]
     set status {}
     if {$s & (1<<0)} {lappend status "INP_OVR"}
     if {$s & (1<<1)} {lappend status "FLT_OVR"}

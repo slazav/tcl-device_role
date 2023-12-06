@@ -13,12 +13,12 @@ itcl::class tenma {
   # we use Device from $base class
   method get_device {} {return ${base}::dev}
 
-  constructor {d ch id} {${base}::constructor $d $ch $id} {
-    # set max current
+  constructor {args} {
+    chain {*}$args
     ${base}::set_curr $max_i
-    Device2::ask $dev "OVP0";  # clear OVP/OCP
-    Device2::ask $dev "OCP0";  #
-    Device2::ask $dev "BEEP1"; # beep off
+    Device2::ask $dev_name"OVP0";  # clear OVP/OCP
+    Device2::ask $dev_name"OCP0";  #
+    Device2::ask $dev_name"BEEP1"; # beep off
   }
   method set_volt {val} {
     ${base}::set_volt $val

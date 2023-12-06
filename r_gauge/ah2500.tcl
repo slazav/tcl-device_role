@@ -15,17 +15,15 @@ itcl::class ah2500 {
     return {}
   }
 
-  constructor {d ch id} {
-    set dev $d
-    if {$ch ne {}} {
-      error "ah2500: no channels supported"
-    }
+  constructor {args} {
+    chain {*}$args
+    if {$dev_chan ne {}} { error "ah2500: no channels supported" }
   }
 
   ############################
   method get {} {
     regexp {C=\s*([0-9.]+)\s+(PF)\s+L=\s*([0-9.]+)\s*(NS)} \
-      [Device2::ask $dev "SI"] X CV CU LV LU
+      [Device2::ask $dev_name "SI"] X CV CU LV LU
     return "$CV $LV"
   }
 }

@@ -8,13 +8,13 @@ namespace eval device_role::dgen {
 itcl::class base {
   inherit device_role::base
 
+  proc test_id {id} {}
+  constructor {args} { chain {*}$args}
+
   # Two DeviceRole objects, ac_sources.
   # Some interaction between them may be needed.
   variable dev_ac1
   variable dev_ac2
-
-  # same as ac_source!
-  proc test_id {id} {}
 
   # variables which should be filled by driver:
   public variable max_v; # max voltage

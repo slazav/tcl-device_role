@@ -13,15 +13,15 @@ itcl::class leak_ag_vs {
     return {}
   }
 
-  constructor {d ch id} {
+  constructor {args} {
+    chain {*}$args
     set valnames [list "Leak" "Pout" "Pin"]
-    set dev $d
   }
 
   ############################
   method get {} {
     set v "?LP"
-    set ret [Device2::ask $dev $v]
+    set ret [Device2::ask $dev_name $v]
 
     # cut command name (1st word) from response if needed
     if {[lindex {*}$ret 0] == $v} {set ret [lrange {*}$ret 1 end]}
