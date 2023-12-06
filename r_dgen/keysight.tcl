@@ -6,11 +6,10 @@ package require Device2
 namespace eval device_role::dgen {
 
 itcl::class keysight {
-  inherit keysight_gen base
-  proc test_id {id} { keysight_gen::test_id $id }
+  inherit base
+  proc test_id {id} { return [keysight_gen_model $id] }
 
-  # we use Device from keysight_gen class
-  method get_device {} {return $keysight_gen::dev}
+  method get_device {} {return $dev}
 
   variable dev_ac1
   variable dev_ac2

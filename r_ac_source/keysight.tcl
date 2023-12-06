@@ -15,38 +15,44 @@ package require Device2
 namespace eval device_role::ac_source {
 
 itcl::class keysight {
-  inherit keysight_gen base
-  proc test_id {id} {keysight_gen::test_id $id}
-  # we use Device from keysight_gen class
+  inherit base
+  proc test_id {id} { return [keysight_gen_model $id] }
 
-  method get_device_info {} {return $keysight_gen::dev}
+  method get_device_info {} {return $dev}
 
-  constructor {d ch id args} {keysight_gen::constructor $d $ch $id} {
+  variable chan
+  variable spref
+  constructor {d ch id args} {
+    set dev $d
+    set chan $ch
     set max_v 20
     set min_v 0.002
-    dev_set_par $dev "${sour_pref}BURST:STATE" "0"
-    dev_set_par $dev "${sour_pref}VOLT:UNIT" "VPP"
-    dev_set_par $dev "UNIT:ANGL"             "DEG"
-    dev_set_par $dev "${sour_pref}FUNC"      "SIN"
-    dev_set_par $dev "OUTP${chan}:LOAD"      "INF"
+    set model [keysight_gen_model $id]
+    set spref [keysight_gen_spref $model $ch]
+
+    dev_set_par $dev "${spref}BURST:STATE" "0"
+    dev_set_par $dev "${spref}VOLT:UNIT" "VPP"
+    dev_set_par $dev "UNIT:ANGL"         "DEG"
+    dev_set_par $dev "${spref}FUNC"      "SIN"
+    dev_set_par $dev "OUTP${chan}:LOAD"  "INF"
   }
 
   # get_* methods do NOT update interface.
   # If they are called regularly, it should not
   # prevent user from typing new values in the interface.
   method get_volt {}  {
-    set v [expr [Device2::ask $dev "${sour_pref}VOLT?"]]
+    set v [expr [Device2::ask $dev "${spref}VOLT?"]]
     if {$ac_shift != 0} {set v [expr $v-$ac_shift]}
     return $v
   }
   method get_freq {} {
-    return [expr [Device2::ask $dev "${sour_pref}FREQ?"]]
+    return [expr [Device2::ask $dev "${spref}FREQ?"]]
   }
   method get_offs {} {
-    return [expr [Device2::ask $dev "${sour_pref}VOLT:OFFS?"]]
+    return [expr [Device2::ask $dev "${spref}VOLT:OFFS?"]]
   }
   method get_phase {} {
-    return [expr [Device2::ask $dev "${sour_pref}PHAS?"]]
+    return [expr [Device2::ask $dev "${spref}PHAS?"]]
   }
   method get_out {} {
     return [Device2::ask $dev "OUTP${chan}?"]
@@ -55,26 +61,26 @@ itcl::class keysight {
 
   method set_ac {f v {o 0} {p {}}} {
     chain $f $v $o $p; # update interface
-    dev_check $dev "${sour_pref}APPLY:SIN $f,[expr $v+$ac_shift],$o"
+    dev_check $dev "${spref}APPLY:SIN $f,[expr $v+$ac_shift],$o"
     if {$p ne {}} {set_phase $p}
   }
   method set_volt {v} {
     chain $v;  # set value in the base class (update interface)
     if {$ac_shift != 0} {set v [expr $v+$ac_shift]}
-    dev_set_par $dev "${sour_pref}VOLT" $v
+    dev_set_par $dev "${spref}VOLT" $v
   }
   method set_freq {v} {
     chain $v
-    dev_set_par $dev "${sour_pref}FREQ" $v
+    dev_set_par $dev "${spref}FREQ" $v
   }
   method set_offs {v}  {
     chain $v
-    dev_set_par $dev "${sour_pref}VOLT:OFFS" $v
+    dev_set_par $dev "${spref}VOLT:OFFS" $v
   }
   method set_phase {v} {
     chain $v
     set v [expr $v-int($v/360.0)*360]
-    dev_set_par $dev "${sour_pref}PHAS" $v
+    dev_set_par $dev "${spref}PHAS" $v
   }
   method set_out {v} {
   # For Keysight generators it maybe useful to switch to burst mode
