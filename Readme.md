@@ -1,51 +1,37 @@
-# DeviceRole library -- standardized drivers for devices
+# DeviceRole library -- standard drivers for devices
 ---
 
-## Ideology
+## Main idea
 
-This is a tcl library for implementing some special roles of devices used
-in the Device library. For example you have a multimeter. Device library
-only knows a name of this device (say mult0) and how it is connected. It
-can transfer commands to the device, but it knows nothing about its model
-and capabilities.
+This is a tcl library for implementing some basic interfaces for
+measurement devices. The lower level, device server (
+https://github.com/slazav/device2 ) knows only device names and
+connection details, it can transfer messages to the devices and get
+answers, but it knows nothing about their command sets and capabilities.
 
-DeviceRole library can autodetect device model and use a driver with some
-standard interface. Client only knows, that the role of device "mult0" is
-a "gauge", and thus it has a get_volt command. This device roles are not
-universal. All real devices have different capabilities, but in many
-cases some simple operations are needed, then DeviceRole library can be
-useful. One physical device can work in defferent roles.
+This library implements interfaces (roles) and checks that
+a device can use it. For example, a standard generator can work in a few
+simple roles: `ac_source`, `dc_source`, `noise_source`. Interface for
+each role has a few basic methods, like `set_volt` and `get_volt` for
+`ac_source` role. A high-level measurement program can use this
+interface without any knowledge about device model. In this case it's
+easy to use different devices without changing code.
 
-Usage:
-```tcl
-Package require DeviceRole
-set dev [DeviceRole mult0:DCV gauge]
-set v [dev get_volt]
-if {[DeviceRoleExists $dev]} {do_something}
-DeviceRoleDelete $dev
-```
+DeviceRole interfaces are very simple, they cover only a few basic
+operations supported by all devices of this type. On the other hand,
+real devices have many different capabilities, they do not fit into
+these interfaces. There are two mechanisms for configuring non-standard
+device properties:
 
-Here we use a "channel" setting `:DCV` to tell the library that we want
-to masure DC voltage. Driver for the specific multimeter device should
-know what is this channel setting means. As an another example we can
-work with a 4-channel power-supply frame using numerical channel settings
-`ps:1` .. `ps:4`.
+* When creating a DeviceRole interface, some parameters can be passed to
+the driver to configure the device.
 
-`DeviceRoleDelete` command deletes the `DeviceRole` object. It keeps
-a reference counter for low-level Device objects and closes them if
-it is needed.
+* Some reles have a widget, which can be embedded into a measurement
+program. Specific drivers can add their controls to this widget.
 
-#### Locks
+If more exotec beheviour is needed, then device can be used directly,
+without the DeviceRole library.
 
-Library provides access to locks implemented in Device library.
-Every driver has following commands (see Device library documentation for
-more infomation):
-```tcl
-* lock   -- lock the device
-* unlock -- unlock the device
-```
-
-TODO: channel-specific locks.
 
 #### Test devices
 
