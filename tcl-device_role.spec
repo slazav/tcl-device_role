@@ -21,6 +21,10 @@ tcl-device_role -- DeviceRole library, standardized drivers for devices
 %install
 mkdir -p %buildroot/%_tcldatadir/%teaname
 install -m644 *.tcl %buildroot/%_tcldatadir/%teaname
+for d in r_*; do
+  mkdir -p %buildroot/%_tcldatadir/%teaname/$d
+  install -m644 $d/*.tcl %buildroot/%_tcldatadir/%teaname/$d
+done
 
 %files
 %dir %_tcldatadir/%teaname
