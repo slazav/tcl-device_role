@@ -2,6 +2,7 @@
 # ac_source interface
 
 package require Itcl
+package require xBlt; # parse_options
 namespace eval device_role::ac_source {
 
 itcl::class base {

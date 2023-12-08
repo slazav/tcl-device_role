@@ -23,6 +23,7 @@
 
 package require Itcl
 package require Device2
+package require xBlt; # parse_options
 namespace eval device_role::lock-in {
 
 itcl::class femto_pico {
