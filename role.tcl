@@ -90,7 +90,7 @@ proc DeviceRoleDelete {name} {
 
   # Close device (empty for TEST devices):
   set d [$name get_dev_name]
-  if {$d ne {}} {Device2::release $d}
+  if {$d ne {TEST}} {Device2::release $d}
 
   # delete the DeviceRole object:
   itcl::delete object $name
@@ -100,7 +100,7 @@ proc DeviceRoleDelete {name} {
 ## Base interface class. All role interfaces are children of it
 itcl::class device_role::base {
 
-  # define all variables anf get_* methods
+  # define all variables and get_* methods
   foreach v {dev_name dev_chan dev_id dev_model dev_opts dev_info} {
     protected variable $v {}
     method get_$v {} [subst -nocommands { return [subst $$v] }]
