@@ -73,7 +73,7 @@ itcl::class femto_pico {
       {-femto_range}    femto_range 4\
       {-femto_tconst}   femto_tconst 6\
     ]
-    xblt::parse_options "lock-in::femto_pico" $args $options
+    xblt::parse_options "lock-in::femto_pico" $dev_opts $options
 
     # If channel is not empty, it should contain channel numbers: <n1>,<n2>
     # This overrides -x and -y settings.
@@ -178,7 +178,7 @@ itcl::class femto_pico {
   ############################
   method get_device_info {} {
     if {$divider!=1} {set div ", divider 1:$divider"} else {set div ""}
-    return ${dev}:$chan_x,$chan_y$div
+    return ${dev_name}:$chan_x,$chan_y$div
   }
 
   method make_widget {tkroot args} {
