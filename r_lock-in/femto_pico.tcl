@@ -1,8 +1,16 @@
 ######################################################################
+# lock-in role
+
+package require Itcl
+package require Device2
+namespace eval device_role::lock-in {
+
+######################################################################
 # Use Femto lock-in + PicoADC.
 #
-# Usage:
-#   DeviceRole <name> lock-in[:<X>,<Y>] [options]
+# Device should be pico_adc program from https://github.com/slazav/pico_osc
+#
+# Channels: ":<X>,<Y>", override -x and -y options.
 #
 # Options:
 #   -x -chan_x   -- X channel (default: 1)
@@ -17,14 +25,6 @@
 #   -femto_s1       -- Position of Femto S1 switch (0 or 1, default: 0)
 #   -femto_range    -- Position of Femto range switch (default: 4)
 #   -femto_tconst   -- Position of Femto tconst switch (default: 6)
-#
-# If channel (:<X>,<Y> suffix) is not empty, it overrides X and Y channel numbers,
-# set by -x and -y perameters.
-
-package require Itcl
-package require Device2
-package require xBlt; # parse_options
-namespace eval device_role::lock-in {
 
 itcl::class femto_pico {
   inherit base
@@ -58,8 +58,10 @@ itcl::class femto_pico {
   ##########################
   constructor {args} {
     chain {*}$args
+
     # Parse options.
-    set options [list \
+    xblt::parse_options "lock_in::femto_pico" $dev_opts \
+    [list \
       {-x -chan_x}   chan_x   1\
       {-y -chan_y}   chan_y   2\
       {-s -single}   single   1\
@@ -73,12 +75,11 @@ itcl::class femto_pico {
       {-femto_range}    femto_range 4\
       {-femto_tconst}   femto_tconst 6\
     ]
-    xblt::parse_options "lock-in::femto_pico" $dev_opts $options
 
     # If channel is not empty, it should contain channel numbers: <n1>,<n2>
     # This overrides -x and -y settings.
     if {$dev_chan != {}} {
-      set xy [split $dev_chan ","]
+      set xy [split $ch ","]
       if {[llength $xy] != 2} { error "bad channel setting: $dev_chan"}
       set chan_x [lindex $xy 0]
       set chan_y [lindex $xy 1]
@@ -172,64 +173,15 @@ itcl::class femto_pico {
 
     set femto_tconst_i [lsearch -regexp $femto_tconsts "^$femto_tconst"]
     if {$femto_tconst_i>=0} {set femto_tconst [lindex $femto_tconsts $femto_tconst_i] }
+
+    if {$divider!=1} {set div ", div 1:$divider"} else {set div ""}
+    set dev_info "${dev_name}:$chan_x,$chan_y$div"
+
   }
 
+  ##########################################################
+  # Interface methods
 
-  ############################
-  method get_device_info {} {
-    if {$divider!=1} {set div ", divider 1:$divider"} else {set div ""}
-    return ${dev_name}:$chan_x,$chan_y$div
-  }
-
-  method make_widget {tkroot args} {
-    chain $tkroot {*}$args
-    set root $tkroot
-
-    if {$show_adc} {
-      # Range combobox:
-      label $root.range_l -text "ADC range, mV:"
-      ttk::combobox $root.range -width 9 -textvariable [itcl::scope range]\
-        -values $ranges
-      #bind $root.range <<ComboboxSelected>> "$this set_range"
-      grid $root.range_l $root.range -padx 2 -pady 1 -sticky e
-
-      # Conversion time combobox
-      label $root.tconv_l -text "ADC conv.time, s:"
-      ttk::combobox $root.tconv -width 9 -textvariable [itcl::scope tconv]\
-        -values $tconvs
-      #bind $root.tconv <<ComboboxSelected>> "$this set_tconv"
-      grid $root.tconv_l $root.tconv -padx 2 -pady 1 -sticky e
-    }
-
-    #######
-    if {$use_femto} {
-      label $root.femto -text "Femto settings:" -font {-weight bold}
-      label $root.femto_s1 -text "Switch1: [expr $femto_s1?{ON}:{OFF}]"
-      grid $root.femto $root.femto_s1 -padx 2 -pady 1 -sticky w
-
-      #label $root.femto_range_l -text "Range:"
-      if {$femto_editable} {
-        # Femto tconst setting
-        ttk::combobox $root.femto_tconst -textvariable [itcl::scope femto_tconst]\
-          -values $femto_tconsts
-
-        # Femto range setting
-        ttk::combobox $root.femto_range -textvariable [itcl::scope femto_range]\
-          -values $femto_ranges
-
-        grid $root.femto_tconst $root.femto_range -padx 2 -pady 1 -sticky w
-      }\
-      else {
-        label $root.femto_tconst -textvariable [itcl::scope femto_tconst]
-        label $root.femto_range -textvariable [itcl::scope femto_range]
-        grid $root.femto_tconst $root.femto_range -padx 2 -pady 1 -sticky w
-      }
-    }
-    # Transformer setting
-  }
-  ############################
-
-  ############################
   method get {} {
 
     # get values
@@ -259,11 +211,8 @@ itcl::class femto_pico {
       set M [expr $M*$k]
     }
 
-    # update interface values
-    update_interface $X $Y $status
-
-    # this is Vrms!
-    return [list $X $Y]
+    update_widget $X $Y $status
+    return [list $X $Y $status]
   }
 
   method get_tconst {} {
@@ -285,6 +234,62 @@ itcl::class femto_pico {
     }
   }
 
+
+  ##########################################################
+  # Other methods
+
+  ##########################################################
+  # Widget
+
+  method make_widget {tkroot args} {
+    chain $tkroot {*}$args
+    set root $tkroot
+    frame $root.f
+    grid $root.f
+
+    if {$show_adc} {
+      # Range combobox:
+      label $root.f.range_l -text "ADC range, mV:"
+      ttk::combobox $root.f.range -width 9 -textvariable [itcl::scope range]\
+        -values $ranges
+      #bind $root.f.range <<ComboboxSelected>> "$this set_range"
+      grid $root.f.range_l $root.f.range -padx 2 -pady 1 -sticky e
+
+      # Conversion time combobox
+      label $root.f.tconv_l -text "ADC conv.time, s:"
+      ttk::combobox $root.f.tconv -width 9 -textvariable [itcl::scope tconv]\
+        -values $tconvs
+      #bind $root.f.tconv <<ComboboxSelected>> "$this set_tconv"
+      grid $root.f.tconv_l $root.f.tconv -padx 2 -pady 1 -sticky e
+    }
+
+    #######
+    if {$use_femto} {
+      label $root.f.femto -text "Femto settings:" -font {-weight bold}
+      label $root.f.femto_s1 -text "Switch1: [expr $femto_s1?{ON}:{OFF}]"
+      grid $root.f.femto $root.f.femto_s1 -padx 2 -pady 1 -sticky w
+
+      #label $root.f.femto_range_l -text "Range:"
+      if {$femto_editable} {
+        # Femto tconst setting
+        ttk::combobox $root.f.femto_tconst -textvariable [itcl::scope femto_tconst]\
+          -values $femto_tconsts -width 16
+
+        # Femto range setting
+        ttk::combobox $root.f.femto_range -textvariable [itcl::scope femto_range]\
+          -values $femto_ranges -width 16
+
+        grid $root.f.femto_tconst $root.f.femto_range -padx 2 -pady 1 -sticky w
+      }\
+      else {
+        label $root.f.femto_tconst -textvariable [itcl::scope femto_tconst]
+        label $root.f.femto_range -textvariable [itcl::scope femto_range]
+        grid $root.f.femto_tconst $root.f.femto_range -padx 2 -pady 1 -sticky w
+      }
+    }
+  }
+
 }
 
-}; # namespace
+######################################################################
+} # namespace
