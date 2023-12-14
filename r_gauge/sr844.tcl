@@ -42,16 +42,23 @@ itcl::class sr844 {
   ############################
   method get {{auto 0}} {
     # If channel is 1 or 2 read auxilary input:
-    if {$dev_chan==1 || $dev_chan==2} { return [Device2::ask $dev_name "AUXO?${dev_chan}"] }
+    if {$dev_chan==1 || $dev_chan==2} {
+      set data [Device2::ask $dev_name "OAUX?${dev_chan}"]
+      update_widget $data
+      return $data
+    }
 
     # If autorange is needed, use AGAN command:
     if {$auto} {Device2::ask $dev_name "AGAN"; after 100}
 
     # Return space-separated values depending on channel setting
-    if {$dev_chan=="XY"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?1,2]] }
-    if {$dev_chan=="RT"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?3,5]] }
-    if {$dev_chan=="FXY"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?8,1,2]] }
-    if {$dev_chan=="FRT"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?8,3,5]] }
+    if {$dev_chan=="XY"}  { set cmd "SNAP?1,2" }
+    if {$dev_chan=="RT"}  { set cmd "SNAP?3,4" }
+    if {$dev_chan=="FXY"} { set cmd "SNAP?9,1,2" }
+    if {$dev_chan=="FRT"} { set cmd "SNAP?9,3,4" }
+    set data [string map {"," " "} [Device2::ask $dev_name $cmd]]
+    update_widget $data
+    return $data
   }
   method get_auto {} { return [get 1] }
 

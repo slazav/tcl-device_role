@@ -135,11 +135,14 @@ itcl::class picoADC {
       foreach ch $adc_ach {
         lappend ares $ures($ch)
       }
+      update_widget $ares
       return $ares
 
     # V3 mode:
     } else {
-      return [Device2::ask $dev_name get_val $chan $sngl $range $convt]
+      set data [Device2::ask $dev_name get_val $chan $sngl $range $convt]
+      update_widget $data
+      return $data
     }
   }
   method get_auto {} { return [get 1] }

@@ -37,7 +37,9 @@ itcl::class leak_ag_vs {
     set pout [format %.4e [expr $pout/760000.0]]; # mtor->bar
     set pin  [format %.4e [expr $pin/760000000.0]]; # utor->bar
 
-    return [list $leak $pout $pin]
+    set data [list $leak $pout $pin]
+    update_widget $data
+    return $data
   }
   method get_auto {} { return [get] }
 }

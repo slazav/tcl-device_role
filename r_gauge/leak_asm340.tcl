@@ -29,7 +29,9 @@ itcl::class leak_asm340 {
     # inlet pressure, measurement (calibrated)
     set pin   [conv_number [Device2::ask $dev_name ?PE]]
     set leak  [conv_number [Device2::ask $dev_name ?LE2]]
-    return [list $leak $pin]
+    set data [list $leak $pin]
+    update_widget $data
+    return $data
   }
   method get_auto {} { return [get] }
 }

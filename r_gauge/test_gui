@@ -1,0 +1,24 @@
+#!/usr/bin/wish
+
+foreach f [lsort [glob ../role.tcl ../d_keysight_err.tcl *.tcl]] {source $f}; #> package require DeviceRole 2.0
+
+if {[llength $argv] < 1} {
+  puts "Usage: $argv0 <device> \[<options> ...\]"
+  exit 1
+}
+
+set tmeas 500
+set dev_name [lindex $argv 0]
+set dev_opts [lrange $argv 1 end]
+set dev [DeviceRole $dev_name gauge {*}$dev_opts]
+
+
+$dev make_widget .g -fmts "{%.2e} {%.2e}"
+pack .g
+
+proc meas {} {
+  puts [$::dev get]
+  after $::tmeas meas
+}
+
+meas

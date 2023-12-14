@@ -2,6 +2,7 @@
 # gauge interface
 
 package require Itcl
+package require xBlt
 namespace eval device_role::gauge {
 
 itcl::class base {
@@ -10,7 +11,7 @@ itcl::class base {
   constructor {args} { chain {*}$args }
 
 
-  ##################
+  ##########################################################
   # variables to be set in the driver:
   variable valnames; # Names of returned values (list)
 
@@ -28,8 +29,7 @@ itcl::class base {
     return [lindex $valnames $n]
   }
 
-
-  ##################
+  ##########################################################
   # methods which should be defined by driver:
   method get {} {}; # do the measurement, return one or more numbers
 
@@ -45,5 +45,52 @@ itcl::class base {
 
   method get_status {} {return ""}; # get current status
   method get_status_raw {} {return 0};
+
+  ##########################################################
+  # Role-specific Tk widget.
+  # It can be modified/replaced in drivers if needed.
+  variable root {}
+  variable fmts {}
+
+  method make_widget {tkroot args} {
+    xblt::parse_options "gauge widget" $args\
+    [list\
+      {-title}       title    {Gauge}\
+      {-fmts}        fmts     {}\
+    ]
+
+    # Main frame:
+    set root $tkroot
+    labelframe $root -text "$title: $dev_info" -font {-weight bold -size 10}
+
+    # Measurement result
+    for {set i 0} {$i<[llength $valnames]} {incr i} {
+      label $root.l$i -font {-weight bold -size 12} -text "[lindex $valnames $i]:"
+      label $root.v$i -font {-weight bold -size 12}
+      grid $root.l$i $root.v$i -padx 2 -pady 1 -sticky we
+    }
+  }
+
+  # Is the widget used?
+  method has_widget {} {
+    return [expr {$root ne {} && [winfo exists $root]}]
+  }
+
+  # this should be called in the get command
+  method update_widget {vals} {
+    if {![has_widget]} return
+    for {set i 0} {$i<[llength $valnames]} {incr i} {
+      if {[llength $vals] <= $i} {
+        $root.v$i configure -text "-"
+        continue
+      }
+      set v [lindex $vals $i]
+      if {[llength $fmts]>$i && $v==$v} {
+        set v [format [lindex $fmts $i] $v]
+      }
+      $root.v$i configure -text "$v"
+    }
+  }
+
 }
 }; # namespace

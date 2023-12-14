@@ -76,6 +76,7 @@ itcl::class k_mplex {
       set ret [concat $ret [split [Device2::ask $dev_name $c] {,}]]
       dev_err_check $dev_name
     }
+    update_widget $ret
     return $ret
   }
   method get_auto {} {

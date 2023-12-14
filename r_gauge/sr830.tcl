@@ -22,11 +22,13 @@ itcl::class sr830 {
     return {}
   }
 
+
   # lock-in ranges and time constants
   common ranges
   common ranges_V  {2e-9 5e-9 1e-8 2e-8 5e-8 1e-7 2e-7 5e-7 1e-6 2e-6 5e-6 1e-5 2e-5 5e-5 1e-4 2e-4 5e-4 1e-3 2e-3 5e-3 1e-2 2e-2 5e-2 0.1 0.2 0.5 1.0}
   common ranges_A  {2e-15 5e-15 1e-14 2e-14 5e-14 1e-13 2e-13 5e-13 1e-12 2e-12 5e-12 1e-11 2e-11 5e-11 1e-10 2e-10 5e-10 1e-9 2e-9 5e-9 1e-8 2e-8 5e-8 1e-7 2e-7 5e-7 1e-6}
   common tconsts   {1e-5 3e-5 1e-4 3e-4 1e-3 3e-3 1e-2 3e-2 0.1 0.3 1.0 3.0 10.0 30.0 1e2 3e3 1e3 3e3 1e4 3e4}
+  common imodes    {A A-B I(1M) I(100M)}
 
   common aux_range 10;    # auxilary input range: +/- 10V
   common aux_tconst 3e-4; # auxilary input bandwidth: 3kHz
@@ -49,16 +51,23 @@ itcl::class sr830 {
   ############################
   method get {{auto 0}} {
     # If channel is 1 or 2 read auxilary input:
-    if {$dev_chan==1 || $dev_chan==2} { return [Device2::ask $dev_name "OAUX?${dev_chan}"] }
+    if {$dev_chan==1 || $dev_chan==2} {
+      set data [Device2::ask $dev_name "OAUX?${dev_chan}"]
+      update_widget $data
+      return $data
+    }
 
     # If autorange is needed, use AGAN command:
     if {$auto} {Device2::ask $dev_name "AGAN"; after 100}
 
     # Return space-separated values depending on channel setting
-    if {$dev_chan=="XY"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?1,2]] }
-    if {$dev_chan=="RT"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?3,4]] }
-    if {$dev_chan=="FXY"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?9,1,2]] }
-    if {$dev_chan=="FRT"} { return [string map {"," " "} [Device2::ask $dev_name SNAP?9,3,4]] }
+    if {$dev_chan=="XY"}  { set cmd "SNAP?1,2" }
+    if {$dev_chan=="RT"}  { set cmd "SNAP?3,4" }
+    if {$dev_chan=="FXY"} { set cmd "SNAP?9,1,2" }
+    if {$dev_chan=="FRT"} { set cmd "SNAP?9,3,4" }
+    set data [string map {"," " "} [Device2::ask $dev_name $cmd]]
+    update_widget $data
+    return $data
   }
   method get_auto {} { return [get 1] }
 
@@ -100,6 +109,20 @@ itcl::class sr830 {
     if {$dev_chan==1 || $dev_chan==2} { return $aux_tconst}
     set n [Device2::ask $dev_name "OFLT?"]
     return [lindex $tconsts $n]
+  }
+
+  method set_imode {{val {}}} {
+    if {$val != {}} {set imode $val}
+    set n [lsearch -exact $imodes $imode]
+    if {$n<0} {error "unknown time constant setting: $imode"}
+    Device2::ask $dev_name "ISRC $n"
+    update_ranges
+  }
+
+  method get_imode {} {
+    set n [Device2::ask $dev_name "ISRC?"]
+    set imode [lindex $imodes $n]
+    return $imode
   }
 
   method get_status_raw {} {

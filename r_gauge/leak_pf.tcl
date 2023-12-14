@@ -18,8 +18,9 @@ itcl::class leak_pf {
 
   ############################
   method get {} {
-    set ret [Device2::ask $dev_name "leak?"]
-    return $ret
+    set data [Device2::ask $dev_name "leak?"]
+    update_widget $data
+    return $data
   }
   method get_auto {} { return [get] }
 }

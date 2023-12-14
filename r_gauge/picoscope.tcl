@@ -203,6 +203,7 @@ itcl::class picoscope {
         }
         break
       }
+      update_widget $ret
       return $ret
     }
     if {$osc_meas=="DC"} {
@@ -257,6 +258,7 @@ itcl::class picoscope {
         }
         break
       }
+      update_widget $ret
       return $ret
     }
   }

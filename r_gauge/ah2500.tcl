@@ -24,6 +24,7 @@ itcl::class ah2500 {
   method get {} {
     regexp {C=\s*([0-9.]+)\s+(PF)\s+L=\s*([0-9.]+)\s*(NS)} \
       [Device2::ask $dev_name "SI"] X CV CU LV LU
+    update_widget "$CV $LV"
     return "$CV $LV"
   }
 }

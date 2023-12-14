@@ -50,7 +50,9 @@ itcl::class lcr_et4502 {
 
   ############################
   method get {} {
-    return [join [split [Device2::ask $dev_name fetch?] {,}]]
+    set data [join [split [Device2::ask $dev_name fetch?] {,}]]
+    update_widget $data
+    return $data
   }
 }
 

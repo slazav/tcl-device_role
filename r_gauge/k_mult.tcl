@@ -58,7 +58,9 @@ itcl::class k_mult {
 
   ############################
   method get {} {
-    return [Device2::ask $dev_name "read?"]
+    set data [Device2::ask $dev_name "read?"]
+    update_widget $data
+    return $data
   }
   method get_auto {} {
     return [get]

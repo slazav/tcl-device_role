@@ -22,7 +22,9 @@ itcl::class leak_l300 {
     # inlet pressure, measurement (calibrated)
     set pin   [Device2::ask $dev_name "*meas:p1:mbar?"]
     set leak  [Device2::ask $dev_name "*read:mbar*l/s?"]
-    return [list $leak $pin]
+    set data [list $leak $pin]
+    update_widget $data
+    return $data
   }
   method get_auto {} { return [get] }
 }

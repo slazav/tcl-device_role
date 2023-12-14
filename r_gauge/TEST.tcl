@@ -38,6 +38,7 @@ itcl::class TEST {
       if {$type=={T}} { set v [expr {[clock milliseconds]%($tsweep*1000)}] }
       lappend data $v
     }
+    update_widget $data
     return $data
   }
   method get_auto {} {
