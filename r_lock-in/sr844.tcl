@@ -92,6 +92,7 @@ itcl::class sr844 {
 
   method get_status {} {
     set s [Device2::ask $dev_name "LIAS?"]
+    if { [string is integer $s] == 0} {return "UNKNOWN"}
     set status {}
     if {$s & (1<<0)} {lappend status "INP_OVR"}
     if {$s & (1<<1)} {lappend status "FLT_OVR"}
