@@ -2,7 +2,7 @@ Source: tcl-device-role
 Section: System
 Priority: optional
 Maintainer: Vladislav Zavjalov <vl.zavjalov@gmail.com>
-Standards-Version: ${ver}
+Standards-Version: 4.0.0
 
 Package: tcl-device-role
 Architecture: all

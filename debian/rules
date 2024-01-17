@@ -10,6 +10,11 @@ binary-indep:
 
 	mkdir -p $(datadir)
 	install *.tcl -t $(datadir)
+	for i in r_*; do\
+	  [  -d "$$i" ] || continue;\
+	  mkdir -p "$(datadir)/$$i";\
+	  install "$$i"/*.tcl -t "$(datadir)/$$i";\
+	done
 
 	# Install Program Resources
 	mkdir $(DESTDIR)/DEBIAN
